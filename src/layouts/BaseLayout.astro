@@ -1,4 +1,5 @@
 ---
+import '../styles/global.css';
 import { SITE_TITLE, SITE_TAGLINE } from '../consts';
 
 interface Props {
@@ -6,12 +7,24 @@ interface Props {
   description: string;
   /** トップページなど、タイトルにサイト名を重ねたくないページで true。 */
   isRoot?: boolean;
+  /** 本文幅ではなく広い幅を使うページ（一覧など）で true。 */
+  wide?: boolean;
+  /** OG画像のパス。未指定ならサイト共通のものを使う。 */
+  ogImage?: string;
 }
 
-const { title, description, isRoot = false } = Astro.props;
+const {
+  title,
+  description,
+  isRoot = false,
+  wide = false,
+  ogImage = '/og-default.png',
+} = Astro.props;
 
 const pageTitle = isRoot ? `${SITE_TITLE} | ${SITE_TAGLINE}` : `${title} | ${SITE_TITLE}`;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogUrl = new URL(ogImage, Astro.site).href;
+const year = new Date().getFullYear();
 ---
 
 <!doctype html>
@@ -23,165 +36,147 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
-    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="theme-color" content="#2f4858" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content={isRoot ? 'website' : 'article'} />
     <meta property="og:site_name" content={SITE_TITLE} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:locale" content="ja_JP" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogUrl} />
 
     <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
 
   <body>
+    <a class="skip" href="#main">本文へスキップ</a>
+
     <header class="site-header">
-      <a class="brand" href="/">
-        <strong>{SITE_TITLE}</strong>
-        <span>{SITE_TAGLINE}</span>
-      </a>
-      <nav>
-        <a href="/">タイプ一覧</a>
-        <a href="/about/">運営者情報</a>
-      </nav>
+      <div class="wrap-wide bar">
+        <a class="brand" href="/">
+          <span class="brand-name">{SITE_TITLE}</span>
+          <span class="brand-tag">{SITE_TAGLINE}</span>
+        </a>
+        <nav aria-label="メイン">
+          <a href="/">タイプ一覧</a>
+          <a href="/about/">運営者情報</a>
+        </nav>
+      </div>
     </header>
 
-    <main>
+    <main id="main" class={wide ? 'wrap-wide' : 'wrap'}>
       <slot />
     </main>
 
     <footer class="site-footer">
-      <nav>
-        <a href="/about/">運営者情報</a>
-        <a href="/privacy/">プライバシーポリシー</a>
-        <a href="/disclaimer/">免責事項</a>
-      </nav>
-      <p>&copy; {new Date().getFullYear()} {SITE_TITLE}</p>
+      <div class="wrap-wide">
+        <nav aria-label="フッター">
+          <a href="/">タイプ一覧</a>
+          <a href="/about/">運営者情報</a>
+          <a href="/privacy/">プライバシーポリシー</a>
+          <a href="/disclaimer/">免責事項</a>
+        </nav>
+        <p class="copy">&copy; {year} {SITE_TITLE}</p>
+      </div>
     </footer>
 
-    <style is:global>
-      :root {
-        --bg: #ffffff;
-        --fg: #1c1c1e;
-        --fg-muted: #6b6b73;
-        --border: #e3e3e8;
-        --surface: #fafafc;
-        --surface-alt: #f2f2f5;
-        --accent: #2f4858;
-        --accent-fg: #ffffff;
-        --link: #1f5f8b;
+    <style>
+      .skip {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 10;
+        padding: 0.6rem 1rem;
+        background: var(--accent);
+        color: var(--accent-fg);
+        text-decoration: none;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #16161a;
-          --fg: #e8e8ea;
-          --fg-muted: #9a9aa3;
-          --border: #2e2e35;
-          --surface: #1e1e23;
-          --surface-alt: #26262c;
-          --accent: #7aa6c2;
-          --accent-fg: #10161b;
-          --link: #8fc0e0;
-        }
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--fg);
-        font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans',
-          'Noto Sans JP', 'Yu Gothic', Meiryo, sans-serif;
-        line-height: 1.9;
-        /* 表やコードは各自で横スクロールさせ、ページ本体は横に溢れさせない */
-        overflow-x: hidden;
-      }
-
-      main {
-        max-width: 44rem;
-        margin: 0 auto;
-        padding: 2.5rem 1.25rem 4rem;
-      }
-
-      a {
-        color: var(--link);
-      }
-
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-
-      h1 {
-        font-size: 1.7rem;
-        line-height: 1.5;
-      }
-
-      h2 {
-        margin-top: 2.75rem;
-        padding-bottom: 0.35rem;
-        border-bottom: 1px solid var(--border);
-        font-size: 1.3rem;
-        line-height: 1.6;
-      }
-
-      h3 {
-        margin-top: 2rem;
-        font-size: 1.1rem;
-        line-height: 1.6;
+      .skip:focus {
+        left: 0;
       }
 
       .site-header {
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .bar {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem 1.5rem;
+        gap: 0.5rem 2rem;
         align-items: center;
         justify-content: space-between;
-        max-width: 44rem;
-        margin: 0 auto;
-        padding: 1.25rem;
-        border-bottom: 1px solid var(--border);
+        padding-block: 0.9rem;
       }
 
       .brand {
         color: inherit;
         text-decoration: none;
+        line-height: 1.4;
       }
 
-      .brand strong {
+      .brand-name {
         display: block;
-        font-size: 1.05rem;
+        font-size: var(--step-1);
+        font-weight: 700;
+        letter-spacing: 0.02em;
       }
 
-      .brand span {
+      .brand-tag {
         display: block;
+        margin-top: 0.15rem;
         color: var(--fg-muted);
-        font-size: 0.78rem;
-        line-height: 1.6;
+        font-size: var(--step--1);
+        line-height: 1.5;
+      }
+
+      /* スマホではタグラインが2行になって嵩張るので隠す */
+      @media (max-width: 30rem) {
+        .brand-tag {
+          display: none;
+        }
       }
 
       .site-header nav,
       .site-footer nav {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
-        font-size: 0.85rem;
+        gap: 0.75rem 1.4rem;
+        font-size: var(--step--1);
+      }
+
+      .site-header nav a {
+        color: var(--fg-muted);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .site-header nav a:hover {
+        color: var(--link);
+        text-decoration: underline;
       }
 
       .site-footer {
-        max-width: 44rem;
-        margin: 0 auto;
-        padding: 1.75rem 1.25rem 3rem;
+        margin-top: 4rem;
+        padding-block: 2rem 3rem;
         border-top: 1px solid var(--border);
+        background: var(--surface);
         color: var(--fg-muted);
-        font-size: 0.85rem;
+        font-size: var(--step--1);
       }
 
-      .site-footer p {
-        margin: 1rem 0 0;
+      .copy {
+        margin: 1.25rem 0 0;
+        color: var(--fg-faint);
       }
     </style>
   </body>

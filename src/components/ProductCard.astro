@@ -36,8 +36,8 @@ const { name, url, price, reason, axes = [], cons } = Astro.props;
       <ul class="axes">
         {axes.map((a) => (
           <li>
-            {a}
-            <span class="axis-label">{AXIS_GUIDANCE[a]?.label}</span>
+            <b>{a}</b>
+            <span>{AXIS_GUIDANCE[a]?.label}</span>
           </li>
         ))}
       </ul>
@@ -46,7 +46,10 @@ const { name, url, price, reason, axes = [], cons } = Astro.props;
 
   <p class="reason">{reason}</p>
 
-  <p class="cons"><strong>気になる点</strong>{cons}</p>
+  <div class="cons">
+    <p class="cons-label">気になる点</p>
+    <p class="cons-body">{cons}</p>
+  </div>
 
   <a class="buy" href={url} target="_blank" rel="nofollow sponsored noopener">
     Amazonで見る
@@ -56,91 +59,101 @@ const { name, url, price, reason, axes = [], cons } = Astro.props;
 <style>
   .card {
     margin: 1.75rem 0;
-    padding: 1.25rem;
+    padding: 1.15rem 1.25rem 1.35rem;
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius);
     background: var(--surface);
   }
 
   .head {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1rem;
+    gap: 0.3rem 1rem;
     align-items: baseline;
     justify-content: space-between;
   }
 
   .head h3 {
     margin: 0;
-    font-size: 1.05rem;
-    line-height: 1.5;
+    font-size: var(--step-0);
+    line-height: 1.6;
   }
 
   .price {
     flex: none;
     color: var(--fg-muted);
-    font-size: 0.875rem;
+    font-size: var(--step--1);
+    white-space: nowrap;
   }
 
   .axes {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
-    margin: 0.85rem 0 0;
+    margin: 0.8rem 0 0;
     padding: 0;
     list-style: none;
   }
 
   .axes li {
     display: inline-flex;
-    gap: 0.3rem;
+    gap: 0.35rem;
     align-items: baseline;
-    padding: 0.15rem 0.5rem;
-    border: 1px solid var(--border);
+    margin: 0;
+    padding: 0.12rem 0.6rem;
+    border: 1px solid var(--border-strong);
     border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.72rem;
   }
 
-  .axis-label {
+  .axes b {
+    letter-spacing: 0.06em;
+  }
+
+  .axes span {
     color: var(--fg-muted);
-    font-weight: 400;
   }
 
   .reason {
-    margin: 0.85rem 0 0;
-    line-height: 1.9;
+    margin: 0.9rem 0 0;
+    line-height: 1.95;
   }
 
   .cons {
-    margin: 0.85rem 0 0;
-    padding: 0.7rem 0.9rem;
-    border-radius: 6px;
+    margin-top: 1rem;
+    padding: 0.75rem 0.95rem;
+    border-radius: var(--radius-sm);
     background: var(--surface-alt);
-    font-size: 0.9rem;
-    line-height: 1.8;
   }
 
-  .cons strong {
-    display: block;
-    margin-bottom: 0.2rem;
-    color: var(--fg-muted);
-    font-size: 0.8rem;
+  .cons-label {
+    margin: 0 0 0.15rem;
+    color: var(--fg-faint);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .cons-body {
+    margin: 0;
+    font-size: var(--step--1);
+    line-height: 1.85;
   }
 
   .buy {
     display: inline-block;
-    margin-top: 1.1rem;
-    padding: 0.55rem 1.4rem;
-    border-radius: 6px;
+    margin-top: 1.2rem;
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius-sm);
     background: var(--accent);
     color: var(--accent-fg);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
     font-weight: 700;
     text-decoration: none;
   }
 
   .buy:hover {
-    opacity: 0.85;
+    color: var(--accent-fg);
+    opacity: 0.88;
   }
 </style>

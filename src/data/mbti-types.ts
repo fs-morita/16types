@@ -32,11 +32,45 @@ export interface MbtiType {
   ratioJp?: number;
 }
 
-export const GROUPS: Record<GroupKey, { name: string; nameEn: string }> = {
-  analyst: { name: '分析家', nameEn: 'Analysts' },
-  diplomat: { name: '外交官', nameEn: 'Diplomats' },
-  sentinel: { name: '番人', nameEn: 'Sentinels' },
-  explorer: { name: '探検家', nameEn: 'Explorers' },
+/**
+ * グループの定義。
+ *
+ * 配色は和色ベースの独自パレット。
+ * 16Personalities の配色（紫/緑/青/黄）とは意図的に変えている。
+ * 色そのものに権利は及ばないが、配色ごと踏襲すると混同を招くため。
+ */
+export const GROUPS: Record<
+  GroupKey,
+  { name: string; nameEn: string; axes: string; hue: string; hueDark: string }
+> = {
+  analyst: {
+    name: '分析家',
+    nameEn: 'Analysts',
+    axes: 'N + T',
+    hue: '#3d4f7c', // 鉄紺
+    hueDark: '#8fa3d4',
+  },
+  diplomat: {
+    name: '外交官',
+    nameEn: 'Diplomats',
+    axes: 'N + F',
+    hue: '#8f5464', // 蘇芳
+    hueDark: '#d9909f',
+  },
+  sentinel: {
+    name: '番人',
+    nameEn: 'Sentinels',
+    axes: 'S + J',
+    hue: '#4a6f57', // 松葉
+    hueDark: '#8fc0a0',
+  },
+  explorer: {
+    name: '探検家',
+    nameEn: 'Explorers',
+    axes: 'S + P',
+    hue: '#a8763e', // 黄土
+    hueDark: '#dcb079',
+  },
 };
 
 export const MBTI_TYPES: MbtiType[] = [

@@ -1,10 +1,13 @@
 ---
+import { getCollection } from 'astro:content';
+
 import BaseLayout from './BaseLayout.astro';
 import AffiliateDisclosure from '../components/AffiliateDisclosure.astro';
 import { AUTHOR_TYPE, DIAGNOSIS_NOTICE, ENTERTAINMENT_NOTICE } from '../consts';
 import { getType, typeLabel } from '../data/mbti-types';
 
 interface Props {
+  id: string;
   title: string;
   description: string;
   pubDate: Date;
@@ -13,19 +16,20 @@ interface Props {
   intent: 'explainer' | 'self' | 'gift';
 }
 
-const { title, description, pubDate, updatedDate, types = [], intent } = Astro.props;
+const { id, title, description, pubDate, updatedDate, types = [], intent } = Astro.props;
 
 const author = getType(AUTHOR_TYPE);
 const related = types.map(getType).filter((t) => t !== undefined);
 
+const others = (await getCollection('posts'))
+  .filter((p) => !p.data.draft && p.id !== id)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 4);
+
 const fmt = (d: Date) =>
   new Intl.DateTimeFormat('ja-JP', { dateStyle: 'long', timeZone: 'Asia/Tokyo' }).format(d);
 
-const INTENT_LABEL = {
-  explainer: '解説',
-  self: '自分用',
-  gift: 'プレゼント',
-} as const;
+const INTENT_LABEL = { explainer: '解説', self: '自分用', gift: 'プレゼント' } as const;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -34,16 +38,17 @@ const INTENT_LABEL = {
       <p class="meta">
         <span class="intent">{INTENT_LABEL[intent]}</span>
         <time datetime={pubDate.toISOString()}>{fmt(pubDate)}</time>
-        {updatedDate && <span>（{fmt(updatedDate)} 更新）</span>}
+        {updatedDate && <span>{fmt(updatedDate)} 更新</span>}
       </p>
 
       <h1>{title}</h1>
+      <p class="desc">{description}</p>
 
       {
         related.length > 0 && (
           <ul class="types">
             {related.map((t) => (
-              <li>
+              <li style={`--g: var(--g-${t!.group})`}>
                 <a href={`/${t!.code.toLowerCase()}/`}>{typeLabel(t!)}</a>
               </li>
             ))}
@@ -62,48 +67,97 @@ const INTENT_LABEL = {
     <footer class="post-foot">
       <p class="notice">{ENTERTAINMENT_NOTICE}</p>
       <p class="notice">{DIAGNOSIS_NOTICE}</p>
-      {
-        author && (
-          <p class="byline">筆者は{typeLabel(author)}。</p>
-        )
-      }
+      {author && <p class="byline">筆者は{typeLabel(author)}。</p>}
     </footer>
   </article>
+
+  {
+    others.length > 0 && (
+      <aside class="more" aria-labelledby="more-h">
+        <h2 id="more-h">ほかの読みもの</h2>
+        <ul>
+          {others.map((p) => (
+            <li>
+              <a href={`/posts/${p.id}/`}>
+                <span class="t">{p.data.title}</span>
+                <span class="d">{p.data.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )
+  }
 </BaseLayout>
 
 <style>
-  .post-head h1 {
-    margin: 0.4rem 0 0;
+  .post-head {
+    margin-bottom: 2rem;
   }
 
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: 0.5rem 0.9rem;
     align-items: center;
-    margin: 0;
-    color: var(--fg-muted);
-    font-size: 0.82rem;
+    margin: 0 0 0.7rem;
+    color: var(--fg-faint);
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
   }
 
   .intent {
-    padding: 0.1rem 0.55rem;
-    border: 1px solid var(--border);
+    padding: 0.1rem 0.6rem;
+    border: 1px solid var(--border-strong);
     border-radius: 999px;
+  }
+
+  .post-head h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .desc {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    line-height: 1.85;
   }
 
   .types {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin: 1rem 0 0;
+    margin: 1.1rem 0 0;
     padding: 0;
     list-style: none;
-    font-size: 0.85rem;
+  }
+
+  .types a {
+    display: inline-block;
+    padding: 0.15rem 0.7rem;
+    border: 1px solid var(--g);
+    border-radius: 999px;
+    color: var(--g);
+    font-size: var(--step--1);
+    text-decoration: none;
+  }
+
+  /* 記事本文。global.css の基礎の上に、読み物向けの調整だけを足す */
+  .body :global(h2) {
+    margin-top: 3.25rem;
   }
 
   .body :global(p) {
-    line-height: 1.95;
+    line-height: 2;
+  }
+
+  .body :global(ul),
+  .body :global(ol) {
+    margin-bottom: 1.5em;
+  }
+
+  .body :global(table) {
+    min-width: 26rem;
   }
 
   .post-foot {
@@ -114,9 +168,54 @@ const INTENT_LABEL = {
 
   .notice,
   .byline {
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.7rem;
+    color: var(--fg-faint);
+    font-size: 0.78rem;
+    line-height: 1.85;
+  }
+
+  .more {
+    margin-top: 3.5rem;
+  }
+
+  .more ul {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .more a {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .more a:hover {
+    border-color: var(--link);
+  }
+
+  .more .t {
+    font-size: var(--step--1);
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .more .d {
     color: var(--fg-muted);
-    font-size: 0.82rem;
-    line-height: 1.8;
+    font-size: 0.78rem;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 46rem) {
+    .more ul {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 </style>

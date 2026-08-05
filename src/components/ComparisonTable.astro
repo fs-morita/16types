@@ -1,6 +1,6 @@
 ---
 interface Props {
-  /** 見出し行。1列目は商品名を想定。 */
+  /** 見出し行。1列目は商品名・項目名を想定。 */
   headers: string[];
   /** 各行。headers と同じ列数にすること。 */
   rows: string[][];
@@ -17,7 +17,8 @@ if (bad) {
 }
 ---
 
-<div class="scroll">
+{/* 表だけを横スクロールさせる。ページ本体は横に溢れさせない（global.css の .scroll-x） */}
+<div class="scroll-x">
   <table>
     {caption && <caption>{caption}</caption>}
     <thead>
@@ -38,40 +39,12 @@ if (bad) {
 </div>
 
 <style>
-  /* 表は横幅を超えることがあるので、ページ本体ではなく表だけを横スクロールさせる */
-  .scroll {
-    overflow-x: auto;
-    margin: 1.75rem 0;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
+  /* 比較表は語句が短いので折り返さない。長い説明が入る場合は td 側で解除する */
+  thead th {
     white-space: nowrap;
   }
 
-  caption {
-    margin-bottom: 0.6rem;
-    color: var(--fg-muted);
-    font-size: 0.85rem;
-    text-align: left;
-  }
-
-  th,
-  td {
-    padding: 0.6rem 0.9rem;
-    border: 1px solid var(--border);
-    text-align: left;
-  }
-
-  thead th {
-    background: var(--surface-alt);
-    font-size: 0.85rem;
-  }
-
   tbody th {
-    background: var(--surface);
-    font-weight: 700;
+    white-space: nowrap;
   }
 </style>

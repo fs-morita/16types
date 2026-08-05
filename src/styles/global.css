@@ -1,0 +1,292 @@
+/*
+ * デザイントークンと基礎スタイル。
+ *
+ * 方針:
+ * - 日本語の可読性を最優先（行間・字送り・1行あたりの文字数）
+ * - PC / タブレット / スマホで破綻しないよう、固定px幅を使わず clamp() と grid で組む
+ * - ライト/ダーク両対応。OS設定に追従する
+ */
+
+/* ---------------------------------------------------------------- tokens */
+
+:root {
+  /* 面 */
+  --bg: #fdfcfa;
+  --surface: #ffffff;
+  --surface-alt: #f4f2ee;
+  --border: #e2ded6;
+  --border-strong: #cdc7bb;
+
+  /* 文字 */
+  --fg: #1f1d1a;
+  --fg-muted: #6d675e;
+  --fg-faint: #948d82;
+
+  /* アクセント */
+  --accent: #2f4858;
+  --accent-fg: #ffffff;
+  --link: #1f5f7a;
+  --link-hover: #14404f;
+
+  /* グループ色（JS側の GROUPS と対応） */
+  --g-analyst: #3d4f7c;
+  --g-diplomat: #8f5464;
+  --g-sentinel: #4a6f57;
+  --g-explorer: #a8763e;
+
+  /* レイアウト */
+  --measure: 44rem; /* 本文の最大幅。日本語で1行40〜45字が目安 */
+  --wide: 68rem; /* 一覧など、本文より広く使う領域 */
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  /* タイポグラフィ（画面幅に応じて滑らかに変化） */
+  --step--1: clamp(0.8rem, 0.77rem + 0.15vw, 0.875rem);
+  --step-0: clamp(0.95rem, 0.9rem + 0.25vw, 1.0625rem);
+  --step-1: clamp(1.1rem, 1.02rem + 0.4vw, 1.3rem);
+  --step-2: clamp(1.3rem, 1.15rem + 0.7vw, 1.65rem);
+  --step-3: clamp(1.55rem, 1.3rem + 1.2vw, 2.15rem);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15161a;
+    --surface: #1c1e23;
+    --surface-alt: #23262c;
+    --border: #2e3238;
+    --border-strong: #434850;
+
+    --fg: #e9e7e3;
+    --fg-muted: #a09a92;
+    --fg-faint: #7c766e;
+
+    --accent: #7fa8c0;
+    --accent-fg: #0f171c;
+    --link: #82bcd8;
+    --link-hover: #a9d4ea;
+
+    --g-analyst: #8fa3d4;
+    --g-diplomat: #d9909f;
+    --g-sentinel: #8fc0a0;
+    --g-explorer: #dcb079;
+
+    color-scheme: dark;
+  }
+}
+
+/* ----------------------------------------------------------------- reset */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%; /* iOS の横向きで文字が拡大されるのを防ぐ */
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP',
+    'BIZ UDPGothic', 'Yu Gothic', Meiryo, system-ui, sans-serif;
+  font-size: var(--step-0);
+  line-height: 1.95;
+  /* palt: 日本語の約物を詰める。これがあるだけで見栄えがかなり変わる */
+  font-feature-settings: 'palt' 1;
+  text-spacing-trim: space-first;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-break: strict;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ------------------------------------------------------------ typography */
+
+h1,
+h2,
+h3,
+h4 {
+  font-feature-settings: 'palt' 1;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 0 0 0.6em;
+  font-size: var(--step-3);
+  line-height: 1.45;
+}
+
+h2 {
+  margin: 3rem 0 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--step-2);
+  line-height: 1.55;
+}
+
+h3 {
+  margin: 2.25rem 0 0.75rem;
+  font-size: var(--step-1);
+  line-height: 1.6;
+}
+
+p {
+  margin: 0 0 1.5em;
+}
+
+a {
+  color: var(--link);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+ul,
+ol {
+  padding-left: 1.4em;
+}
+
+li {
+  margin-bottom: 0.5em;
+}
+
+strong {
+  font-weight: 700;
+}
+
+blockquote {
+  margin: 1.75rem 0;
+  padding: 0.9rem 1.2rem;
+  border-left: 3px solid var(--border-strong);
+  background: var(--surface-alt);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--fg-muted);
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+code {
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--surface-alt);
+  font-size: 0.9em;
+}
+
+/* --------------------------------------------------------------- layout */
+
+.wrap {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.wrap-wide {
+  width: 100%;
+  max-width: var(--wide);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+main {
+  display: block;
+  padding-block: clamp(2rem, 5vw, 3.5rem) clamp(3rem, 8vw, 5rem);
+}
+
+/*
+ * 記事本文やページ内で、表など幅の広いものだけを横スクロールさせる。
+ * body 自体は絶対に横スクロールさせない。
+ */
+.scroll-x {
+  overflow-x: auto;
+  margin-block: 1.75rem;
+  /* スクロールできることが分かるよう、端を少し余らせる */
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  min-width: 30rem;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+  line-height: 1.7;
+}
+
+caption {
+  margin-bottom: 0.6rem;
+  color: var(--fg-muted);
+  font-size: var(--step--1);
+  text-align: left;
+}
+
+th,
+td {
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--surface-alt);
+  white-space: nowrap;
+}
+
+tbody th {
+  background: var(--surface);
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------- a11y */
+
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

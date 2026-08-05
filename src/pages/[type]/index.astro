@@ -25,34 +25,43 @@ export const getStaticPaths = (() =>
   }))) satisfies GetStaticPaths;
 
 const { type } = Astro.props as { type: MbtiType };
+const group = GROUPS[type.group];
 
 const posts = (await getCollection('posts'))
   .filter((p) => !p.data.draft && p.data.types.includes(type.code))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const gift = posts.filter((p) => p.data.intent === 'gift');
-const self = posts.filter((p) => p.data.intent === 'self');
-const explainer = posts.filter((p) => p.data.intent === 'explainer');
-
 const sections = [
-  { key: 'gift', heading: `${type.code}へのプレゼント`, items: gift },
-  { key: 'self', heading: `${type.code}が自分で使うもの`, items: self },
-  { key: 'explainer', heading: `${type.code}の性格を読む`, items: explainer },
+  { heading: `${type.code}へのプレゼント`, items: posts.filter((p) => p.data.intent === 'gift') },
+  { heading: `${type.code}が自分で使うもの`, items: posts.filter((p) => p.data.intent === 'self') },
+  { heading: `${type.code}の性格を読む`, items: posts.filter((p) => p.data.intent === 'explainer') },
 ];
 
 const axes = axesOf(type);
+const siblings = MBTI_TYPES.filter((t) => t.group === type.group && t.code !== type.code);
 ---
 
 <BaseLayout
   title={typeLabel(type)}
   description={`${typeLabel(type)}の傾向と、プレゼント・自分用のグッズ選び。4つの指標から理由を分解して考えます。`}
 >
-  <p class="crumb">
-    <a href="/">トップ</a> / {GROUPS[type.group].name}
-  </p>
+  <nav class="crumb" aria-label="パンくず">
+    <a href="/">トップ</a>
+    <span aria-hidden="true">/</span>
+    <span>{group.name}</span>
+  </nav>
 
-  <h1>{type.code}（{type.name}）</h1>
-  <p class="en">{type.nameEn}{type.ratioJp && ` ・ 日本での割合 約${type.ratioJp}%`}</p>
+  <header class="type-hero" style={`--g: var(--g-${type.group})`}>
+    <p class="group-badge">{group.name}<span>{group.axes}</span></p>
+    <h1>
+      <span class="code">{type.code}</span>
+      <span class="jp">{type.name}</span>
+    </h1>
+    <p class="en">
+      {type.nameEn}
+      {type.ratioJp && <span class="ratio">日本での割合 約{type.ratioJp}%</span>}
+    </p>
+  </header>
 
   <h2>4つの指標から見た選び方</h2>
   <p>
@@ -60,7 +69,7 @@ const axes = axesOf(type);
     商品を選ぶときは「{type.code}だからこれ」ではなく、指標ごとの傾向に翻訳して考えます。
   </p>
 
-  <div class="scroll">
+  <div class="scroll-x">
     <table>
       <thead>
         <tr>
@@ -93,8 +102,10 @@ const axes = axesOf(type);
           <ul class="posts">
             {s.items.map((p) => (
               <li>
-                <a href={`/posts/${p.id}/`}>{p.data.title}</a>
-                <span>{p.data.description}</span>
+                <a href={`/posts/${p.id}/`}>
+                  <span class="t">{p.data.title}</span>
+                  <span class="d">{p.data.description}</span>
+                </a>
               </li>
             ))}
           </ul>
@@ -106,80 +117,166 @@ const axes = axesOf(type);
   {
     posts.length === 0 && (
       <p class="empty">
-        {type.code} の記事はまだありません。
-        <a href="/">他のタイプを見る</a>
+        {type.code} 向けの記事はまだありません。
+        <a href="/">読みものから探す</a>
       </p>
     )
   }
+
+  <h2>同じ{group.name}のタイプ</h2>
+  <ul class="siblings">
+    {
+      siblings.map((t) => (
+        <li style={`--g: var(--g-${t.group})`}>
+          <a href={`/${t.code.toLowerCase()}/`}>
+            <span class="s-code">{t.code}</span>
+            <span class="s-name">{t.name}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
 </BaseLayout>
 
 <style>
   .crumb {
-    margin: 0;
-    color: var(--fg-muted);
-    font-size: 0.82rem;
+    display: flex;
+    gap: 0.5rem;
+    color: var(--fg-faint);
+    font-size: var(--step--1);
   }
 
-  h1 {
-    margin: 0.3rem 0 0.2rem;
+  .type-hero {
+    margin: 0.75rem 0 2.5rem;
+    padding: 1.25rem 1.4rem;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--g);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .group-badge {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: baseline;
+    margin: 0 0 0.5rem;
+    color: var(--g);
+    font-size: var(--step--1);
+    font-weight: 700;
+  }
+
+  .group-badge span {
+    color: var(--fg-faint);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+  }
+
+  .type-hero h1 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.8rem;
+    align-items: baseline;
+    margin: 0;
+  }
+
+  .type-hero .code {
+    color: var(--g);
+    letter-spacing: 0.08em;
+  }
+
+  .type-hero .jp {
+    font-size: var(--step-1);
   }
 
   .en {
-    margin: 0;
-    color: var(--fg-muted);
-    font-size: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 0.5rem 0 0;
+    color: var(--fg-faint);
+    font-size: var(--step--1);
+    letter-spacing: 0.03em;
   }
 
-  .scroll {
-    overflow-x: auto;
-    margin: 1.25rem 0;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.88rem;
-  }
-
-  th,
-  td {
-    padding: 0.6rem 0.85rem;
-    border: 1px solid var(--border);
-    text-align: left;
-    vertical-align: top;
-  }
-
-  thead th {
-    background: var(--surface-alt);
-    font-size: 0.82rem;
-    white-space: nowrap;
-  }
-
-  tbody th {
-    background: var(--surface);
-    white-space: nowrap;
+  .ratio::before {
+    content: '·';
+    margin-right: 0.7rem;
   }
 
   .posts {
-    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .posts li {
-    margin-bottom: 0.9rem;
+  .posts a {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
   }
 
-  .posts span {
-    display: block;
+  .posts a:hover {
+    border-color: var(--link);
+  }
+
+  .posts .t {
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .posts .d {
     color: var(--fg-muted);
-    font-size: 0.85rem;
-    line-height: 1.7;
+    font-size: var(--step--1);
+    line-height: 1.75;
   }
 
   .empty {
     padding: 1.25rem;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
     color: var(--fg-muted);
-    font-size: 0.9rem;
+    font-size: var(--step--1);
+  }
+
+  .siblings {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .siblings a {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .siblings a:hover {
+    border-color: var(--g);
+  }
+
+  .s-code {
+    color: var(--g);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .s-name {
+    font-size: var(--step--1);
   }
 </style>

@@ -1,10 +1,13 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE_TAGLINE, AUTHOR_TYPE } from '../consts';
-import { MBTI_TYPES, GROUPS, getType, type GroupKey } from '../data/mbti-types';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('posts')).filter((p) => !p.data.draft);
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_TAGLINE } from '../consts';
+import { MBTI_TYPES, GROUPS, type GroupKey } from '../data/mbti-types';
+
+const posts = (await getCollection('posts'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 /** タイプごとの記事本数。0本のタイプもハブページは存在する。 */
 const countByType = new Map<string, number>();
@@ -15,132 +18,213 @@ for (const post of posts) {
 }
 
 const groupKeys = Object.keys(GROUPS) as GroupKey[];
-const author = getType(AUTHOR_TYPE);
 
-const latest = posts
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 5);
+const INTENT_LABEL = { explainer: '解説', self: '自分用', gift: 'プレゼント' } as const;
+const fmt = (d: Date) =>
+  new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' }).format(d);
 ---
 
-<BaseLayout
-  title="トップ"
-  description={SITE_TAGLINE}
-  isRoot
->
-  <h1>16タイプ別に、贈るものと自分で使うものを選ぶ</h1>
+<BaseLayout title="トップ" description={SITE_TAGLINE} isRoot wide>
+  <section class="hero">
+    <h1>16タイプ別に、贈るものと自分で使うものを選ぶ</h1>
+    <p class="lede">
+      「INFPだからこれ」とは書きません。4つの指標
+      （外向/内向・直観/感覚・思考/感情・判断/知覚）に分解して、
+      <strong>「一人の時間を大切にする人だから、これ」</strong>という形で理由を書きます。
+      そのほうが、自分に当てはまるかどうかを読んだ側で判断できるからです。
+    </p>
+  </section>
 
-  <p>
-    性格タイプごとの「好みの傾向」を、4つの指標（外向/内向・直観/感覚・思考/感情・判断/知覚）に
-    分解して考えます。「{author ? author.code : 'INTJ'}だからこれ」という決めつけではなく、
-    「一人の時間を大切にする人だから、これ」という形で理由を書くのが方針です。
-  </p>
+  <section aria-labelledby="types-h">
+    <h2 id="types-h">タイプから探す</h2>
+
+    {
+      groupKeys.map((key) => (
+        <div class="group" style={`--g: var(--g-${key})`}>
+          <div class="group-head">
+            <h3>{GROUPS[key].name}</h3>
+            <span class="group-meta">
+              {GROUPS[key].nameEn} · {GROUPS[key].axes}
+            </span>
+          </div>
+          <ul class="type-grid">
+            {MBTI_TYPES.filter((t) => t.group === key).map((t) => (
+              <li>
+                <a href={`/${t.code.toLowerCase()}/`}>
+                  <span class="code">{t.code}</span>
+                  <span class="name">{t.name}</span>
+                  <span class="count">{countByType.get(t.code) ?? 0}件</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </section>
 
   {
-    latest.length > 0 && (
-      <>
-        <h2>新着</h2>
-        <ul class="latest">
-          {latest.map((p) => (
+    posts.length > 0 && (
+      <section aria-labelledby="posts-h">
+        <h2 id="posts-h">読みもの</h2>
+        <ul class="post-list">
+          {posts.map((p) => (
             <li>
-              <a href={`/posts/${p.id}/`}>{p.data.title}</a>
-              <span>{p.data.description}</span>
-            </li>
-          ))}
-        </ul>
-      </>
-    )
-  }
-
-  <h2>タイプから探す</h2>
-
-  {
-    groupKeys.map((key) => (
-      <section class="group">
-        <h3>
-          {GROUPS[key].name}
-          <span class="group-en">{GROUPS[key].nameEn}</span>
-        </h3>
-        <ul class="types">
-          {MBTI_TYPES.filter((t) => t.group === key).map((t) => (
-            <li>
-              <a href={`/${t.code.toLowerCase()}/`}>
-                <strong>{t.code}</strong>
-                <span>{t.name}</span>
-                <em>{countByType.get(t.code) ?? 0}件</em>
+              <a href={`/posts/${p.id}/`}>
+                <span class="post-meta">
+                  <span class="tag">{INTENT_LABEL[p.data.intent]}</span>
+                  <time datetime={p.data.pubDate.toISOString()}>{fmt(p.data.pubDate)}</time>
+                </span>
+                <span class="post-title">{p.data.title}</span>
+                <span class="post-desc">{p.data.description}</span>
               </a>
             </li>
           ))}
         </ul>
       </section>
-    ))
+    )
   }
 </BaseLayout>
 
 <style>
-  .latest {
-    padding-left: 1.1rem;
+  .hero {
+    max-width: 42rem;
+    margin-bottom: 1rem;
   }
 
-  .latest li {
-    margin-bottom: 0.9rem;
-  }
-
-  .latest span {
-    display: block;
+  .lede {
     color: var(--fg-muted);
-    font-size: 0.85rem;
-    line-height: 1.7;
+    font-size: var(--step-0);
   }
 
-  .group h3 {
+  .lede strong {
+    color: var(--fg);
+  }
+
+  .group {
+    margin-bottom: 2.25rem;
+  }
+
+  .group-head {
     display: flex;
-    gap: 0.6rem;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
     align-items: baseline;
-    border: 0;
+    padding-left: 0.7rem;
+    border-left: 4px solid var(--g);
   }
 
-  .group-en {
-    color: var(--fg-muted);
-    font-size: 0.78rem;
-    font-weight: 400;
+  .group-head h3 {
+    margin: 0;
+    font-size: var(--step-1);
   }
 
-  .types {
+  .group-meta {
+    color: var(--fg-faint);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+  }
+
+  .type-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    /* スマホ2列 → タブレット3列 → PC4列。auto-fill で自然に段が変わる */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
     gap: 0.6rem;
-    margin: 0.75rem 0 0;
+    margin: 0.9rem 0 0;
     padding: 0;
     list-style: none;
   }
 
-  .types a {
-    display: block;
-    padding: 0.7rem 0.85rem;
+  .type-grid a {
+    display: grid;
+    gap: 0.1rem;
+    height: 100%;
+    padding: 0.8rem 0.9rem;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius);
     background: var(--surface);
     color: inherit;
     text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
   }
 
-  .types a:hover {
+  .type-grid a:hover {
+    border-color: var(--g);
+    transform: translateY(-1px);
+  }
+
+  .code {
+    color: var(--g);
+    font-size: var(--step-0);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .name {
+    font-size: var(--step--1);
+    line-height: 1.5;
+  }
+
+  .count {
+    color: var(--fg-faint);
+    font-size: 0.7rem;
+  }
+
+  .post-list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-list a {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+
+  .post-list a:hover {
     border-color: var(--link);
   }
 
-  .types strong {
-    font-size: 0.95rem;
-    letter-spacing: 0.04em;
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    color: var(--fg-faint);
+    font-size: 0.72rem;
   }
 
-  .types span {
-    display: block;
-    font-size: 0.85rem;
+  .tag {
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
   }
 
-  .types em {
+  .post-title {
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .post-desc {
     color: var(--fg-muted);
-    font-size: 0.75rem;
-    font-style: normal;
+    font-size: var(--step--1);
+    line-height: 1.75;
+  }
+
+  /* PCでは読みものを2列にして、縦に間延びさせない */
+  @media (min-width: 52rem) {
+    .post-list {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 </style>
