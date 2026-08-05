@@ -54,7 +54,13 @@ export const AMAZON_ASSOCIATE_TAG = 'soleon-22';
  * 他サイトのIDを流用しないこと。soleon.jp や forday-and.com とは
  * 別プロパティを作る。共用すると双方の計測データが混ざる。
  */
-export const GA_MEASUREMENT_ID = '';
+export const GA_MEASUREMENT_ID = 'G-0ZTSTHZDM1';
+
+/**
+ * GA4 のプロパティID（数値）。
+ * gtag タグには使わない。Data API や BigQuery 連携で必要になる。
+ */
+export const GA_PROPERTY_ID = '15384586617';
 
 /**
  * ステマ規制（景品表示法・2023年10月施行）対応。
