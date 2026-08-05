@@ -29,7 +29,7 @@ export const CONTACT_EMAIL = 'morita_daisuke@soleon.jp';
  * 空のまま ProductCard を使うとビルドが失敗する。これは意図的で、
  * タグ無しのリンク（動くのに紹介料が発生しない）を公開させないため。
  */
-export const AMAZON_ASSOCIATE_TAG = '';
+export const AMAZON_ASSOCIATE_TAG = 'soleon-22';
 
 /**
  * ステマ規制（景品表示法・2023年10月施行）対応。
