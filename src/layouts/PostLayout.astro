@@ -1,7 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
-
 import BaseLayout from './BaseLayout.astro';
+import { publishedPosts } from '../lib/posts';
 import AffiliateDisclosure from '../components/AffiliateDisclosure.astro';
 import { AUTHOR_TYPE, DIAGNOSIS_NOTICE, ENTERTAINMENT_NOTICE } from '../consts';
 import { getType, typeLabel } from '../data/mbti-types';
@@ -21,10 +20,7 @@ const { id, title, description, pubDate, updatedDate, types = [], intent } = Ast
 const author = getType(AUTHOR_TYPE);
 const related = types.map(getType).filter((t) => t !== undefined);
 
-const others = (await getCollection('posts'))
-  .filter((p) => !p.data.draft && p.id !== id)
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 4);
+const others = (await publishedPosts()).filter((p) => p.id !== id).slice(0, 4);
 
 const fmt = (d: Date) =>
   new Intl.DateTimeFormat('ja-JP', { dateStyle: 'long', timeZone: 'Asia/Tokyo' }).format(d);

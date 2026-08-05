@@ -1,8 +1,8 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { getCollection } from 'astro:content';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { publishedPosts } from '../../lib/posts';
 import {
   MBTI_TYPES,
   GROUPS,
@@ -27,9 +27,7 @@ export const getStaticPaths = (() =>
 const { type } = Astro.props as { type: MbtiType };
 const group = GROUPS[type.group];
 
-const posts = (await getCollection('posts'))
-  .filter((p) => !p.data.draft && p.data.types.includes(type.code))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const posts = (await publishedPosts()).filter((p) => p.data.types.includes(type.code));
 
 const sections = [
   { heading: `${type.code}へのプレゼント`, items: posts.filter((p) => p.data.intent === 'gift') },

@@ -1,10 +1,10 @@
 ---
 import type { GetStaticPaths, Page } from 'astro';
-import { getCollection, type CollectionEntry } from 'astro:content';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_TAGLINE, POSTS_PER_PAGE } from '../consts';
 import { MBTI_TYPES, GROUPS, type GroupKey } from '../data/mbti-types';
+import { publishedPosts, type Post } from '../lib/posts';
 
 /**
  * トップページ兼、読みもの一覧のページング。
@@ -14,20 +14,15 @@ import { MBTI_TYPES, GROUPS, type GroupKey } from '../data/mbti-types';
  * 生成されるパスは重ならない。
  */
 export const getStaticPaths = (async ({ paginate }) => {
-  const posts = (await getCollection('posts'))
-    .filter((p) => !p.data.draft)
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-
-  return paginate(posts, { pageSize: POSTS_PER_PAGE });
+  return paginate(await publishedPosts(), { pageSize: POSTS_PER_PAGE });
 }) satisfies GetStaticPaths;
 
-const { page } = Astro.props as { page: Page<CollectionEntry<'posts'>> };
+const { page } = Astro.props as { page: Page<Post> };
 const isFirst = page.currentPage === 1;
 
 /** タイプごとの記事本数。ページングと無関係に全件から数える。 */
-const allPosts = (await getCollection('posts')).filter((p) => !p.data.draft);
 const countByType = new Map<string, number>();
-for (const post of allPosts) {
+for (const post of await publishedPosts()) {
   for (const code of post.data.types) {
     countByType.set(code, (countByType.get(code) ?? 0) + 1);
   }

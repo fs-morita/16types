@@ -3,6 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # 未来日付の記事をその日に公開するための定期ビルド。
+  # 静的サイトなのでビルドしないと反映されない（毎日 00:10 JST）。
+  schedule:
+    - cron: '10 15 * * *'
   workflow_dispatch:
 
 permissions:
