@@ -1,0 +1,37 @@
+---
+import { GA_MEASUREMENT_ID } from '../consts';
+
+/**
+ * Google Analytics 4。
+ *
+ * 測定IDが未設定なら何も出力しない。
+ * soleon.jp / forday-and.com と同じスニペット形式に揃えてある。
+ *
+ * define:vars を使うと Astro が IIFE で包むため gtag がグローバルにならず、
+ * 後から gtag('event', ...) を呼べなくなる。標準のスニペットと同じ出力に
+ * するため、set:html で素の文字列として埋めている。
+ *
+ * IDを入れるときは、プライバシーポリシーの記載も自動で切り替わる
+ * （src/pages/privacy.astro が同じ定数を見ている）。
+ */
+const id = GA_MEASUREMENT_ID;
+
+// 測定IDは英数・ハイフンのみ。想定外の文字が混ざったまま script に埋めない
+if (id && !/^[A-Za-z0-9-]+$/.test(id)) {
+  throw new Error(`GA_MEASUREMENT_ID の形式が不正です: ${id}`);
+}
+
+const snippet = `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${id}');`;
+---
+
+{
+  id && (
+    <>
+      <script async is:inline src={`https://www.googletagmanager.com/gtag/js?id=${id}`} />
+      <script is:inline set:html={snippet} />
+    </>
+  )
+}

@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Analytics from '../components/Analytics.astro';
 import { SITE_TITLE, SITE_TAGLINE, AMAZON_ATTRIBUTION, X_HANDLE, X_URL } from '../consts';
 
 interface Props {
@@ -55,6 +56,8 @@ const year = new Date().getFullYear();
     <meta name="twitter:image" content={ogUrl} />
 
     <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <Analytics />
   </head>
 
   <body>

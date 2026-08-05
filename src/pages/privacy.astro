@@ -1,6 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE_TITLE, SITE_URL, OPERATOR, CONTACT_EMAIL, AMAZON_ATTRIBUTION } from '../consts';
+import {
+  SITE_TITLE,
+  SITE_URL,
+  OPERATOR,
+  CONTACT_EMAIL,
+  AMAZON_ATTRIBUTION,
+  GA_MEASUREMENT_ID,
+} from '../consts';
 ---
 
 <BaseLayout
@@ -23,14 +30,47 @@ import { SITE_TITLE, SITE_URL, OPERATOR, CONTACT_EMAIL, AMAZON_ATTRIBUTION } fro
 
   <h2>アクセス解析について</h2>
   {/*
-    重要: Google Analytics 等を導入したら、必ずここを書き換えること。
-    「使用していない」と書いたまま計測を始めるのは虚偽の表示になる。
-    導入時は、ツール名・収集する情報・オプトアウト手段（GAならブラウザアドオンのURL）を追記する。
+    GA_MEASUREMENT_ID の有無で記載が切り替わる。
+    「使用していない」と書いたまま計測を始めるのは虚偽の表示になるため、
+    タグの出力（components/Analytics.astro）と同じ定数で分岐させている。
+    手で書き換える運用にすると、いつか必ず片方だけ変わる。
   */}
-  <p>
-    現在、当サイトではアクセス解析ツールを使用していません。
-    導入した場合は、収集する情報とオプトアウトの方法を本ページに追記します。
-  </p>
+  {
+    GA_MEASUREMENT_ID ? (
+      <>
+        <p>
+          当サイトでは、アクセス状況の把握のために Google
+          が提供するアクセス解析ツール「Google アナリティクス」を利用しています。
+          Google アナリティクスは Cookie を使用して、匿名のトラフィックデータを収集します。
+          このデータは匿名で収集されており、個人を特定するものではありません。
+        </p>
+        <p>
+          Cookie はブラウザの設定により無効にできます。
+          また、
+          <a
+            href="https://tools.google.com/dlpage/gaoptout?hl=ja"
+            target="_blank"
+            rel="noopener"
+          >
+            Google アナリティクス オプトアウト アドオン
+          </a>
+          を利用することで、当サイトを含むすべてのサイトでの計測を無効にできます。
+        </p>
+        <p>
+          Google アナリティクスの利用規約については
+          <a href="https://marketingplatform.google.com/about/analytics/terms/jp/" target="_blank" rel="noopener">
+            こちら
+          </a>
+          をご確認ください。
+        </p>
+      </>
+    ) : (
+      <p>
+        現在、当サイトではアクセス解析ツールを使用していません。
+        導入した場合は、収集する情報とオプトアウトの方法を本ページに追記します。
+      </p>
+    )
+  }
 
   <h2>個人情報の取得について</h2>
   <p>
