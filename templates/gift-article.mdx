@@ -43,20 +43,19 @@ import ComparisonTable from '../../components/ComparisonTable.astro';
 
 {/*
   商品は src/data/products.ts のカタログを id で参照します。
-  商品名・価格・ASIN・理由・気になる点はカタログ側に一度だけ書きます。
-  同じ商品が複数タイプの記事に載るため、直書きすると価格変更のたびに全記事を直す羽目になります。
+  商品名・ASIN・一言はカタログ側に一度だけ書きます。
+  同じ商品が複数タイプの記事に載るため、直書きすると変更のたびに全記事を直す羽目になります。
 
   存在しない id を書くとビルドが落ちます（黙って商品カードが消えるより良いため）。
   id の一覧は products.csv、または `npm run products:check` の出力で確認できます。
+
+  商品のスペック説明はここに書きません。記事の中身は上の性格分析の側にあります。
 */}
 
 <ProductCard id="board-game" />
 
-{/* この記事だけ理由を変えたい場合のみ reason を上書きできます */}
-<ProductCard
-  id="instant-camera"
-  reason="その場で現物が残るので、渡した瞬間より後に効いてくる。使い道を相手が決められる。"
-/>
+{/* この記事だけ言い方を変えたい場合のみ reason を上書きできます */}
+<ProductCard id="instant-camera" reason="その場に残るものを渡したいとき（E・P）に。" />
 
 ## 低評価レビューで指摘が集中していた点
 
