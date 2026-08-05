@@ -6,8 +6,19 @@ export const SITE_TITLE = '16タイプ研究室';
 export const SITE_TAGLINE = 'INTJ（建築家）が書く、16タイプの分析ノート';
 export const SITE_URL = 'https://16types.soleon.jp';
 
+/**
+ * 読みもの一覧の1ページあたり件数。
+ * getStaticPaths は Astro が分離して実行するためフロントマターの変数を参照できない。
+ * import なら届くので、ページ側ではなくここに置いている。
+ */
+export const POSTS_PER_PAGE = 6;
+
 /** 筆者の性格タイプ。記事の署名と運営者情報で使う。 */
 export const AUTHOR_TYPE = 'INTJ';
+
+/** 運営者。Amazonアソシエイトの帰属表示にも使うので、実在の名称にすること。 */
+export const OPERATOR = '株式会社SOLEON';
+export const CONTACT_EMAIL = 'morita_daisuke@soleon.jp';
 
 /**
  * ステマ規制（景品表示法・2023年10月施行）対応。
@@ -16,9 +27,12 @@ export const AUTHOR_TYPE = 'INTJ';
 export const PR_LABEL = 'PR';
 export const AFFILIATE_DISCLOSURE = 'この記事には広告が含まれます。';
 
-/** Amazonアソシエイト・プログラムが定める帰属表示。 */
-export const AMAZON_ATTRIBUTION =
-  'Amazonのアソシエイトとして、当サイトは適格販売により収入を得ています。';
+/**
+ * Amazonアソシエイト・プログラムが定める帰属表示。
+ * 規約の書式は「Amazonのアソシエイトとして、[名称]は適格販売により収入を得ています。」
+ * なので、運営者名を入れた形にしている。
+ */
+export const AMAZON_ATTRIBUTION = `Amazonのアソシエイトとして、${OPERATOR}は適格販売により収入を得ています。`;
 
 /**
  * 商標・出自に関する注記。

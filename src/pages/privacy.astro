@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE_TITLE, SITE_URL, AMAZON_ATTRIBUTION } from '../consts';
+import { SITE_TITLE, SITE_URL, OPERATOR, CONTACT_EMAIL, AMAZON_ATTRIBUTION } from '../consts';
 ---
 
 <BaseLayout
@@ -22,19 +22,21 @@ import { SITE_TITLE, SITE_URL, AMAZON_ATTRIBUTION } from '../consts';
   </p>
 
   <h2>アクセス解析について</h2>
+  {/*
+    重要: Google Analytics 等を導入したら、必ずここを書き換えること。
+    「使用していない」と書いたまま計測を始めるのは虚偽の表示になる。
+    導入時は、ツール名・収集する情報・オプトアウト手段（GAならブラウザアドオンのURL）を追記する。
+  */}
   <p>
-    {/* TODO: Google Analytics / Search Console を導入したら、ここに具体名と
-        オプトアウト手段（アドオンのURL等）を追記する。未導入なら本節は削除。 */}
-    当サイトでは、アクセス状況の把握のためにアクセス解析ツールを利用する場合があります。
-    その際、Cookie により匿名のトラフィックデータを収集しますが、個人を特定する情報は含みません。
-    Cookie はブラウザの設定により無効化できます。
+    現在、当サイトではアクセス解析ツールを使用していません。
+    導入した場合は、収集する情報とオプトアウトの方法を本ページに追記します。
   </p>
 
   <h2>個人情報の取得について</h2>
   <p>
     当サイトは、閲覧のみであれば氏名・メールアドレス等の個人情報を取得しません。
     お問い合わせをいただいた場合に限り、返信のために必要な範囲で利用し、
-    その目的以外には利用しません。
+    その目的以外には利用しません。第三者へ提供することもありません。
   </p>
 
   <h2>免責事項</h2>
@@ -45,10 +47,11 @@ import { SITE_TITLE, SITE_URL, AMAZON_ATTRIBUTION } from '../consts';
 
   <h2>お問い合わせ</h2>
   <p>
-    本ポリシーに関するお問い合わせは<a href="/about/">運営者情報</a>をご覧ください。
+    本ポリシーに関するお問い合わせは
+    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> までご連絡ください。
   </p>
 
-  <p class="meta">適用対象: {SITE_URL}</p>
+  <p class="meta">適用対象: {SITE_URL}　運営: {OPERATOR}</p>
 </BaseLayout>
 
 <style>

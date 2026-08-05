@@ -3,6 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import {
   SITE_TITLE,
   AUTHOR_TYPE,
+  OPERATOR,
+  CONTACT_EMAIL,
   AMAZON_ATTRIBUTION,
   DIAGNOSIS_NOTICE,
 } from '../consts';
@@ -13,27 +15,56 @@ const author = getType(AUTHOR_TYPE);
 
 <BaseLayout
   title="運営者情報"
-  description={`${SITE_TITLE}の運営方針と運営者について。`}
+  description={`${SITE_TITLE}の運営者と運営方針について。`}
 >
   <h1>運営者情報</h1>
 
-  <h2>運営者</h2>
+  <div class="scroll-x">
+    <table>
+      <tbody>
+        <tr>
+          <th scope="row">サイト名</th>
+          <td>{SITE_TITLE}</td>
+        </tr>
+        <tr>
+          <th scope="row">運営</th>
+          <td>{OPERATOR}</td>
+        </tr>
+        <tr>
+          <th scope="row">執筆</th>
+          <td>{author ? typeLabel(author) : AUTHOR_TYPE}</td>
+        </tr>
+        <tr>
+          <th scope="row">お問い合わせ</th>
+          <td><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>このサイトについて</h2>
   <p>
-    {author ? typeLabel(author) : AUTHOR_TYPE}。
-    {/* TODO: 表示名・自己紹介を記入する。連絡先メールアドレスを公開するかは要検討。 */}
+    16タイプ性格診断（一般に「MBTI」と呼ばれているもの）を、
+    4つの指標——外向/内向・直観/感覚・思考/感情・判断/知覚——に分解して読むサイトです。
+    診断の成り立ちや、結果の受け止め方、タイプごとの傾向を扱います。
   </p>
 
-  <h2>このサイトの方針</h2>
+  <h2>書き方の方針</h2>
   <ul>
     <li>
-      性格タイプと商品を「タイプ名」で直接結びつけません。4つの指標
-      （外向/内向・直観/感覚・思考/感情・判断/知覚）に翻訳した理由を必ず書きます。
+      タイプ名だけで断定しません。「{AUTHOR_TYPE}だからこれ」ではなく、
+      指標に翻訳した理由を書きます。そのほうが、自分に当てはまるかどうかを
+      読んだ側で判断できるからです。
     </li>
     <li>
-      良い点だけを書きません。合わない場面と気になる点を必ず併記します。
+      良い面だけを書きません。合わない場面や気になる点を必ず併記します。
     </li>
     <li>
       他サイトの説明文やイラストを転載しません。文章はすべて自分で書いています。
+    </li>
+    <li>
+      出典のある事実は、批判的な見解も含めて併記します。
+      診断を持ち上げるためだけの記事は書きません。
     </li>
   </ul>
 
@@ -41,15 +72,24 @@ const author = getType(AUTHOR_TYPE);
   <p>{AMAZON_ATTRIBUTION}</p>
   <p>
     アフィリエイト広告を含む記事には、冒頭に「PR」と明示しています。
+    詳しくは<a href="/privacy/">プライバシーポリシー</a>をご覧ください。
   </p>
 
   <h2>取り扱う診断について</h2>
   <p>{DIAGNOSIS_NOTICE}</p>
-
-  <h2>お問い合わせ</h2>
   <p>
-    {/* TODO: 連絡先（メールフォーム or メールアドレス）を記入する。
-        Amazonアソシエイトの審査でも連絡手段があると望ましい。 */}
-    準備中です。
+    性格タイプによる分類は、適性・能力・相性を断定するものではありません。
+    詳しくは<a href="/disclaimer/">免責事項</a>をご覧ください。
   </p>
 </BaseLayout>
+
+<style>
+  table {
+    min-width: 0;
+  }
+
+  tbody th {
+    width: 10rem;
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,388 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_TAGLINE, POSTS_PER_PAGE } from '../consts';
+import { MBTI_TYPES, GROUPS, type GroupKey } from '../data/mbti-types';
+
+/**
+ * トップページ兼、読みもの一覧のページング。
+ *
+ * 1ページ目が `/`、2ページ目以降が `/2/` `/3/`。
+ * タイプ別ハブ（/intj/ など）は [type]/index.astro が別途生成するので、
+ * 生成されるパスは重ならない。
+ */
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = (await getCollection('posts'))
+    .filter((p) => !p.data.draft)
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+  return paginate(posts, { pageSize: POSTS_PER_PAGE });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as { page: Page<CollectionEntry<'posts'>> };
+const isFirst = page.currentPage === 1;
+
+/** タイプごとの記事本数。ページングと無関係に全件から数える。 */
+const allPosts = (await getCollection('posts')).filter((p) => !p.data.draft);
+const countByType = new Map<string, number>();
+for (const post of allPosts) {
+  for (const code of post.data.types) {
+    countByType.set(code, (countByType.get(code) ?? 0) + 1);
+  }
+}
+
+const groupKeys = Object.keys(GROUPS) as GroupKey[];
+
+const INTENT_LABEL = { explainer: '解説', self: '自分用', gift: 'プレゼント' } as const;
+const fmt = (d: Date) =>
+  new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' }).format(d);
+---
+
+<BaseLayout
+  title={isFirst ? 'トップ' : `読みもの ${page.currentPage}ページ目`}
+  description={SITE_TAGLINE}
+  isRoot={isFirst}
+  wide
+>
+  {
+    isFirst && (
+      <section class="hero">
+        <h1>
+          16タイプを、<br />4つの指標に分解して読む
+        </h1>
+        <p class="lede">
+          「INFPだから」で片づけない。外向/内向・直観/感覚・思考/感情・判断/知覚——
+          <strong>4つの指標がどう噛み合っているか</strong>を見ると、
+          同じタイプの中の違いや、噛み合わない相手との距離まで見えてきます。
+          診断の成り立ちから、タイプごとの傾向まで。
+        </p>
+      </section>
+    )
+  }
+
+  <section aria-labelledby="posts-h">
+    <h2 id="posts-h">
+      読みもの
+      {!isFirst && <span class="pageno">{page.currentPage} / {page.lastPage}</span>}
+    </h2>
+
+    <ul class="post-list">
+      {
+        page.data.map((p) => (
+          <li>
+            <a href={`/posts/${p.id}/`}>
+              <span class="post-meta">
+                <span class="tag">{INTENT_LABEL[p.data.intent]}</span>
+                <time datetime={p.data.pubDate.toISOString()}>{fmt(p.data.pubDate)}</time>
+              </span>
+              <span class="post-title">{p.data.title}</span>
+              <span class="post-desc">{p.data.description}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {
+      page.lastPage > 1 && (
+        <nav class="pager" aria-label="読みもののページ送り">
+          {page.url.prev ? (
+            <a class="edge" href={page.url.prev} rel="prev">
+              ← 新しい
+            </a>
+          ) : (
+            <span class="edge disabled">← 新しい</span>
+          )}
+
+          <ol>
+            {Array.from({ length: page.lastPage }, (_, i) => i + 1).map((n) => (
+              <li>
+                {n === page.currentPage ? (
+                  <span class="cur" aria-current="page">
+                    {n}
+                  </span>
+                ) : (
+                  <a href={n === 1 ? '/' : `/${n}/`}>{n}</a>
+                )}
+              </li>
+            ))}
+          </ol>
+
+          {page.url.next ? (
+            <a class="edge" href={page.url.next} rel="next">
+              古い →
+            </a>
+          ) : (
+            <span class="edge disabled">古い →</span>
+          )}
+        </nav>
+      )
+    }
+  </section>
+
+  <section aria-labelledby="types-h">
+    <h2 id="types-h">タイプから探す</h2>
+
+    {
+      groupKeys.map((key) => (
+        <div class="group" style={`--g: var(--g-${key})`}>
+          <div class="group-head">
+            <h3>{GROUPS[key].name}</h3>
+            <span class="group-meta">
+              {GROUPS[key].nameEn} · {GROUPS[key].axes}
+            </span>
+          </div>
+          <ul class="type-grid">
+            {MBTI_TYPES.filter((t) => t.group === key).map((t) => (
+              <li>
+                <a href={`/${t.code.toLowerCase()}/`}>
+                  <span class="code">{t.code}</span>
+                  <span class="name">{t.name}</span>
+                  {(countByType.get(t.code) ?? 0) > 0 && (
+                    <span class="count">{countByType.get(t.code)}件</span>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    max-width: 42rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero h1 {
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.005em;
+  }
+
+  .lede {
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  .lede strong {
+    color: var(--fg);
+  }
+
+  .pageno {
+    margin-left: 0.6rem;
+    color: var(--fg-faint);
+    font-size: var(--step--1);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .post-list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-list a {
+    display: grid;
+    gap: 0.3rem;
+    height: 100%;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+
+  .post-list a:hover {
+    border-color: var(--link);
+  }
+
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    color: var(--fg-faint);
+    font-size: 0.72rem;
+  }
+
+  .tag {
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+  }
+
+  .post-title {
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .post-desc {
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    line-height: 1.75;
+  }
+
+  /* ページ送り */
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.75rem;
+    font-size: var(--step--1);
+  }
+
+  .pager ol {
+    display: flex;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pager li {
+    margin: 0;
+  }
+
+  .pager a,
+  .pager .cur,
+  .pager .disabled {
+    display: grid;
+    place-items: center;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    padding-inline: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pager a {
+    background: var(--surface);
+  }
+
+  .pager a:hover {
+    border-color: var(--link);
+  }
+
+  .pager .cur {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 700;
+  }
+
+  .pager .disabled {
+    border-color: transparent;
+    color: var(--fg-faint);
+    opacity: 0.5;
+  }
+
+  .group {
+    margin-bottom: 2.25rem;
+  }
+
+  .group-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    align-items: baseline;
+    padding-left: 0.7rem;
+    border-left: 4px solid var(--g);
+  }
+
+  .group-head h3 {
+    margin: 0;
+    font-size: var(--step-1);
+  }
+
+  .group-meta {
+    color: var(--fg-faint);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+  }
+
+  .type-grid {
+    display: grid;
+    /* スマホ2列 → タブレット3列 → PC4列。auto-fill で自然に段が変わる */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+    gap: 0.6rem;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /*
+   * 4文字コードそのものを図版として使う。
+   * アイコンを別途置くより、意味が直接読めて説明もいらない。
+   */
+  .type-grid a {
+    position: relative;
+    display: grid;
+    gap: 0.1rem;
+    height: 100%;
+    padding: 0.9rem 1rem 1rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--g);
+    text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  /* グループ色の細い帯。カードの所属が一目で分かる */
+  .type-grid a::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--g);
+  }
+
+  .type-grid a:hover {
+    border-color: var(--g);
+    transform: translateY(-1px);
+  }
+
+  .code {
+    font-size: var(--step-2);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+  }
+
+  .name {
+    color: var(--fg);
+    font-size: var(--step--1);
+    line-height: 1.5;
+  }
+
+  .count {
+    color: var(--fg-faint);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* PCでは読みものを2列にして、縦に間延びさせない */
+  @media (min-width: 52rem) {
+    .post-list {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
