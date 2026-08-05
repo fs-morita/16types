@@ -16,7 +16,7 @@ interface Props {
 const { id, reason: reasonOverride } = Astro.props;
 
 const product = getProduct(id);
-const { name, priceHint, axes } = product;
+const { name, whatItIs, priceHint, axes } = product;
 const reason = reasonOverride ?? product.reason;
 
 // タグ付けを一箇所に集約する。未設定ならここでビルドが落ちる
@@ -28,6 +28,9 @@ const href = amazonLink(product.asin);
     <h3>{name}</h3>
     {priceHint && <span class="price">{priceHint}</span>}
   </div>
+
+  {/* 画像が使えないぶん、それが何なのかを言葉で補う */}
+  <p class="what">{whatItIs}</p>
 
   {
     axes.length > 0 && (
@@ -77,6 +80,13 @@ const href = amazonLink(product.asin);
     color: var(--fg-muted);
     font-size: var(--step--1);
     white-space: nowrap;
+  }
+
+  .what {
+    margin: 0.3rem 0 0;
+    color: var(--fg-muted);
+    font-size: var(--step--1);
+    line-height: 1.7;
   }
 
   .axes {
