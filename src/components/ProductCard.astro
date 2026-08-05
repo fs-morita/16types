@@ -1,28 +1,26 @@
 ---
-import { AXIS_GUIDANCE } from '../data/mbti-types';
 import { getProduct } from '../data/products';
 import { amazonLink } from '../lib/amazon';
 
 interface Props {
   /** products.ts の商品ID。存在しなければビルドが落ちる。 */
   id: string;
-  /**
-   * 記事ごとに理由を変えたい場合のみ上書きする。
-   * 未指定ならカタログの reason を使う。
-   */
-  reason?: string;
 }
 
-const { id, reason: reasonOverride } = Astro.props;
+const { id } = Astro.props;
 
 const product = getProduct(id);
-const { name, whatItIs, priceHint, axes } = product;
-const reason = reasonOverride ?? product.reason;
+const { name, whatItIs, priceHint } = product;
 
 // タグ付けを一箇所に集約する。未設定ならここでビルドが落ちる
 const href = amazonLink(product.asin);
 ---
 
+{/*
+  カードは「商品名・それが何か・リンク」だけに絞っている。
+  なぜそのタイプに向くのかは、記事本文の指標分解セクションで説明する。
+  カード側で理由を繰り返すと冗長になるため、意図的に置いていない。
+*/}
 <div class="card">
   <div class="head">
     <h3>{name}</h3>
@@ -32,21 +30,6 @@ const href = amazonLink(product.asin);
   {/* 画像が使えないぶん、それが何なのかを言葉で補う */}
   <p class="what">{whatItIs}</p>
 
-  {
-    axes.length > 0 && (
-      <ul class="axes">
-        {axes.map((a) => (
-          <li>
-            <b>{a}</b>
-            <span>{AXIS_GUIDANCE[a]?.label}</span>
-          </li>
-        ))}
-      </ul>
-    )
-  }
-
-  <p class="reason">{reason}</p>
-
   <a class="buy" href={href} target="_blank" rel="nofollow sponsored noopener">
     Amazonで見る
   </a>
@@ -54,8 +37,13 @@ const href = amazonLink(product.asin);
 
 <style>
   .card {
-    margin: 1.75rem 0;
-    padding: 1.15rem 1.25rem 1.35rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0;
+    padding: 1rem 1.25rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
@@ -64,74 +52,41 @@ const href = amazonLink(product.asin);
   .head {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem 1rem;
+    gap: 0.2rem 0.9rem;
     align-items: baseline;
-    justify-content: space-between;
+    width: 100%;
   }
 
   .head h3 {
     margin: 0;
     font-size: var(--step-0);
-    line-height: 1.6;
+    line-height: 1.55;
   }
 
   .price {
-    flex: none;
     color: var(--fg-muted);
     font-size: var(--step--1);
     white-space: nowrap;
   }
 
   .what {
-    margin: 0.3rem 0 0;
+    flex: 1 1 14rem;
+    margin: 0;
     color: var(--fg-muted);
     font-size: var(--step--1);
-    line-height: 1.7;
-  }
-
-  .axes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin: 0.8rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .axes li {
-    display: inline-flex;
-    gap: 0.35rem;
-    align-items: baseline;
-    margin: 0;
-    padding: 0.12rem 0.6rem;
-    border: 1px solid var(--border-strong);
-    border-radius: 999px;
-    font-size: 0.72rem;
-  }
-
-  .axes b {
-    letter-spacing: 0.06em;
-  }
-
-  .axes span {
-    color: var(--fg-muted);
-  }
-
-  .reason {
-    margin: 0.9rem 0 0;
-    line-height: 1.95;
+    line-height: 1.75;
   }
 
   .buy {
-    display: inline-block;
-    margin-top: 1.1rem;
-    padding: 0.6rem 1.5rem;
+    flex: none;
+    padding: 0.5rem 1.3rem;
     border-radius: var(--radius-sm);
     background: var(--accent);
     color: var(--accent-fg);
     font-size: var(--step--1);
     font-weight: 700;
     text-decoration: none;
+    white-space: nowrap;
   }
 
   .buy:hover {

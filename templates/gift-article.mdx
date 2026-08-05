@@ -43,7 +43,7 @@ import ComparisonTable from '../../components/ComparisonTable.astro';
 
 {/*
   商品は src/data/products.ts のカタログを id で参照します。
-  商品名・ASIN・一言はカタログ側に一度だけ書きます。
+  商品名・ASIN・「それが何か」はカタログ側に一度だけ書きます。
   同じ商品が複数タイプの記事に載るため、直書きすると変更のたびに全記事を直す羽目になります。
 
   存在しない id を書くとビルドが落ちます（黙って商品カードが消えるより良いため）。
@@ -53,9 +53,7 @@ import ComparisonTable from '../../components/ComparisonTable.astro';
 */}
 
 <ProductCard id="board-game" />
-
-{/* この記事だけ言い方を変えたい場合のみ reason を上書きできます */}
-<ProductCard id="instant-camera" reason="その場に残るものを渡したいとき（E・P）に。" />
+<ProductCard id="instant-camera" />
 
 ## 低評価レビューで指摘が集中していた点
 
