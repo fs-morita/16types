@@ -47,9 +47,10 @@ import ComparisonTable from '../../components/ComparisonTable.astro';
   省略するとビルドが型エラーになります。
 */}
 
+{/* url は ASIN かフルURLだけ。?tag= は書かない（amazonLink が自動で付ける） */}
 <ProductCard
   name="商品名"
-  url="https://www.amazon.co.jp/dp/XXXXXXXXXX?tag=YOURTAG-22"
+  url="B0XXXXXXXX"
   price="¥5,000前後"
   axes={['E', 'P']}
   reason="人と共有できて、使い方が決まりすぎていないもの。渡した後の使い道を相手が決められる。"

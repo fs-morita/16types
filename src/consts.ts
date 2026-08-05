@@ -21,6 +21,17 @@ export const OPERATOR = '株式会社SOLEON';
 export const CONTACT_EMAIL = 'morita_daisuke@soleon.jp';
 
 /**
+ * AmazonアソシエイトのトラッキングID（例: 16types-22）。
+ *
+ * 登録すると即「仮参加」状態になり、承認前でもIDが発行されリンクを作れる。
+ * ここに入れると src/lib/amazon.ts の amazonLink() が全リンクに自動で付ける。
+ *
+ * 空のまま ProductCard を使うとビルドが失敗する。これは意図的で、
+ * タグ無しのリンク（動くのに紹介料が発生しない）を公開させないため。
+ */
+export const AMAZON_ASSOCIATE_TAG = '';
+
+/**
  * ステマ規制（景品表示法・2023年10月施行）対応。
  * 「どこかに書く」では要件を満たさないため、全記事の冒頭に固定表示する。
  */

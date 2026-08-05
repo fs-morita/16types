@@ -1,9 +1,13 @@
 ---
 import { AXIS_GUIDANCE } from '../data/mbti-types';
+import { amazonLink } from '../lib/amazon';
 
 interface Props {
   name: string;
-  /** Amazonの商品URL（アソシエイトリンク）。 */
+  /**
+   * ASIN（英数10桁）または amazon.co.jp の商品URL。
+   * アソシエイトタグは amazonLink() が自動で付けるので、記事側では書かない。
+   */
   url: string;
   price?: string;
   /**
@@ -23,6 +27,9 @@ interface Props {
 }
 
 const { name, url, price, reason, axes = [], cons } = Astro.props;
+
+// タグ付けを一箇所に集約する。未設定ならここでビルドが落ちる
+const href = amazonLink(url);
 ---
 
 <div class="card">
@@ -51,7 +58,7 @@ const { name, url, price, reason, axes = [], cons } = Astro.props;
     <p class="cons-body">{cons}</p>
   </div>
 
-  <a class="buy" href={url} target="_blank" rel="nofollow sponsored noopener">
+  <a class="buy" href={href} target="_blank" rel="nofollow sponsored noopener">
     Amazonで見る
   </a>
 </div>
