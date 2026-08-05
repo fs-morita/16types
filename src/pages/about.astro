@@ -5,6 +5,8 @@ import {
   AUTHOR_TYPE,
   OPERATOR,
   CONTACT_EMAIL,
+  X_HANDLE,
+  X_URL,
   AMAZON_ATTRIBUTION,
   DIAGNOSIS_NOTICE,
 } from '../consts';
@@ -33,6 +35,12 @@ const author = getType(AUTHOR_TYPE);
         <tr>
           <th scope="row">執筆</th>
           <td>{author ? typeLabel(author) : AUTHOR_TYPE}</td>
+        </tr>
+        <tr>
+          <th scope="row">X</th>
+          <td>
+            <a href={X_URL} target="_blank" rel="me noopener">@{X_HANDLE}</a>
+          </td>
         </tr>
         <tr>
           <th scope="row">お問い合わせ</th>

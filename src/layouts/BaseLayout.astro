@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { SITE_TITLE, SITE_TAGLINE, AMAZON_ATTRIBUTION } from '../consts';
+import { SITE_TITLE, SITE_TAGLINE, AMAZON_ATTRIBUTION, X_HANDLE, X_URL } from '../consts';
 
 interface Props {
   title: string;
@@ -49,6 +49,7 @@ const year = new Date().getFullYear();
     <meta property="og:image" content={ogUrl} />
     <meta property="og:locale" content="ja_JP" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={`@${X_HANDLE}`} />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogUrl} />
@@ -68,6 +69,7 @@ const year = new Date().getFullYear();
         <nav aria-label="メイン">
           <a href="/">タイプ一覧</a>
           <a href="/about/">運営者情報</a>
+          <a href={X_URL} target="_blank" rel="me noopener">X</a>
         </nav>
       </div>
     </header>
@@ -80,6 +82,7 @@ const year = new Date().getFullYear();
       <div class="wrap-wide">
         <nav aria-label="フッター">
           <a href="/">タイプ一覧</a>
+          <a href={X_URL} target="_blank" rel="me noopener">X（@{X_HANDLE}）</a>
           <a href="/about/">運営者情報</a>
           <a href="/privacy/">プライバシーポリシー</a>
           <a href="/disclaimer/">免責事項</a>

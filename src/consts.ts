@@ -21,6 +21,17 @@ export const OPERATOR = '株式会社SOLEON';
 export const CONTACT_EMAIL = 'morita_daisuke@soleon.jp';
 
 /**
+ * X（旧Twitter）アカウント。
+ *
+ * このアカウントにアフィリエイトリンクは貼らない。記事へのリンクだけを貼る。
+ * Amazonアソシエイトは「アソシエイトリンクを使用するURLを漏れなく登録」を求めており、
+ * 未登録URLでの使用は契約解除の対象になるため。
+ * 将来Xに直接貼るなら、その時点でアカウントURLをアソシエイト側に登録すること。
+ */
+export const X_HANDLE = '16types_soleon';
+export const X_URL = `https://x.com/${X_HANDLE}`;
+
+/**
  * AmazonアソシエイトのトラッキングID（例: 16types-22）。
  *
  * 登録すると即「仮参加」状態になり、承認前でもIDが発行されリンクを作れる。
