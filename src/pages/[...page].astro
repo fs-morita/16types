@@ -30,6 +30,15 @@ for (const post of await publishedPosts()) {
 
 const groupKeys = Object.keys(GROUPS) as GroupKey[];
 
+/**
+ * Astro の page.url.prev/next は末尾スラッシュなし（/2）で返る。
+ * 生成されるのは dist/2/index.html なので、末尾スラッシュを付けて
+ * 余計なリダイレクトを挟ませない。番号リンク側と表記も揃う。
+ */
+const withSlash = (u: string | undefined) => (u && !u.endsWith('/') ? `${u}/` : u);
+const prevUrl = withSlash(page.url.prev);
+const nextUrl = withSlash(page.url.next);
+
 const INTENT_LABEL = { explainer: '解説', self: '自分用', gift: 'プレゼント' } as const;
 const fmt = (d: Date) =>
   new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' }).format(d);
@@ -83,8 +92,8 @@ const fmt = (d: Date) =>
     {
       page.lastPage > 1 && (
         <nav class="pager" aria-label="読みもののページ送り">
-          {page.url.prev ? (
-            <a class="edge" href={page.url.prev} rel="prev">
+          {prevUrl ? (
+            <a class="edge" href={prevUrl} rel="prev">
               ← 新しい
             </a>
           ) : (
@@ -105,8 +114,8 @@ const fmt = (d: Date) =>
             ))}
           </ol>
 
-          {page.url.next ? (
-            <a class="edge" href={page.url.next} rel="next">
+          {nextUrl ? (
+            <a class="edge" href={nextUrl} rel="next">
               古い →
             </a>
           ) : (
