@@ -3,7 +3,6 @@ import type { GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import TypeMark from '../../components/TypeMark.astro';
 import {
   MBTI_TYPES,
   GROUPS,
@@ -53,18 +52,15 @@ const siblings = MBTI_TYPES.filter((t) => t.group === type.group && t.code !== t
   </nav>
 
   <header class="type-hero" style={`--g: var(--g-${type.group})`}>
-    <div class="hero-mark"><TypeMark type={type} size={84} /></div>
-    <div>
-      <p class="group-badge">{group.name}<span>{group.axes}</span></p>
-      <h1>
-        <span class="code">{type.code}</span>
-        <span class="jp">{type.name}</span>
-      </h1>
-      <p class="en">
-        {type.nameEn}
-        {type.ratioJp && <span class="ratio">日本での割合 約{type.ratioJp}%</span>}
-      </p>
-    </div>
+    <p class="group-badge">{group.name}<span>{group.axes}</span></p>
+    <h1>
+      <span class="code">{type.code}</span>
+      <span class="jp">{type.name}</span>
+    </h1>
+    <p class="en">
+      {type.nameEn}
+      {type.ratioJp && <span class="ratio">日本での割合 約{type.ratioJp}%</span>}
+    </p>
   </header>
 
   <h2>4つの指標</h2>
@@ -134,11 +130,8 @@ const siblings = MBTI_TYPES.filter((t) => t.group === type.group && t.code !== t
       siblings.map((t) => (
         <li style={`--g: var(--g-${t.group})`}>
           <a href={`/${t.code.toLowerCase()}/`}>
-            <TypeMark type={t} size={32} />
-            <span class="s-txt">
-              <span class="s-code">{t.code}</span>
-              <span class="s-name">{t.name}</span>
-            </span>
+            <span class="s-code">{t.code}</span>
+            <span class="s-name">{t.name}</span>
           </a>
         </li>
       ))
@@ -155,32 +148,13 @@ const siblings = MBTI_TYPES.filter((t) => t.group === type.group && t.code !== t
   }
 
   .type-hero {
-    display: flex;
-    gap: 1.1rem;
-    align-items: center;
     margin: 0.75rem 0 2.5rem;
-    padding: 1.35rem 1.4rem;
+    padding: 1.35rem 1.5rem 1.5rem;
     border: 1px solid var(--border);
     border-left: 5px solid var(--g);
     border-radius: var(--radius);
     background: var(--surface);
     color: var(--g);
-  }
-
-  .hero-mark {
-    flex: none;
-  }
-
-  /* スマホでは84pxのマークが場所を取りすぎるので少し縮める */
-  @media (max-width: 26rem) {
-    .type-hero {
-      gap: 0.85rem;
-    }
-
-    .hero-mark :global(svg) {
-      width: 60px;
-      height: 60px;
-    }
   }
 
   .group-badge {
@@ -208,9 +182,10 @@ const siblings = MBTI_TYPES.filter((t) => t.group === type.group && t.code !== t
     margin: 0;
   }
 
+  /* 4文字コードそのものを図版として大きく見せる */
   .type-hero .code {
-    color: var(--g);
-    letter-spacing: 0.08em;
+    font-size: var(--step-3);
+    letter-spacing: 0.06em;
   }
 
   .type-hero .jp {
@@ -284,11 +259,11 @@ const siblings = MBTI_TYPES.filter((t) => t.group === type.group && t.code !== t
   }
 
   .siblings a {
-    display: flex;
-    gap: 0.6rem;
-    align-items: center;
-    padding: 0.7rem 0.85rem;
+    display: grid;
+    gap: 0.05rem;
+    padding: 0.75rem 0.9rem;
     border: 1px solid var(--border);
+    border-left: 3px solid var(--g);
     border-radius: var(--radius);
     background: var(--surface);
     color: var(--g);
@@ -299,15 +274,10 @@ const siblings = MBTI_TYPES.filter((t) => t.group === type.group && t.code !== t
     border-color: var(--g);
   }
 
-  .s-txt {
-    display: grid;
-    gap: 0.05rem;
-    min-width: 0;
-  }
-
   .s-code {
+    font-size: var(--step-1);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
   }
 
   .s-name {

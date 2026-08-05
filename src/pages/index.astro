@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
-import TypeMark from '../components/TypeMark.astro';
 import { SITE_TAGLINE } from '../consts';
 import { MBTI_TYPES, GROUPS, type GroupKey } from '../data/mbti-types';
 
@@ -20,9 +19,6 @@ for (const post of posts) {
 
 const groupKeys = Object.keys(GROUPS) as GroupKey[];
 
-/** ヒーローの装飾に使う代表4タイプ（各グループから1つずつ） */
-const heroTypes = groupKeys.map((k) => MBTI_TYPES.find((t) => t.group === k)!);
-
 const INTENT_LABEL = { explainer: '解説', self: '自分用', gift: 'プレゼント' } as const;
 const fmt = (d: Date) =>
   new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' }).format(d);
@@ -38,15 +34,6 @@ const fmt = (d: Date) =>
         同じタイプの中の違いや、噛み合わない相手との距離まで見えてきます。
         診断の成り立ちから、タイプごとの傾向まで。
       </p>
-    </div>
-    <div class="hero-marks" aria-hidden="true">
-      {
-        heroTypes.map((t) => (
-          <span style={`color: var(--g-${t.group})`}>
-            <TypeMark type={t} size={56} />
-          </span>
-        ))
-      }
     </div>
   </section>
 
@@ -66,12 +53,11 @@ const fmt = (d: Date) =>
             {MBTI_TYPES.filter((t) => t.group === key).map((t) => (
               <li>
                 <a href={`/${t.code.toLowerCase()}/`}>
-                  <TypeMark type={t} size={40} />
-                  <span class="txt">
-                    <span class="code">{t.code}</span>
-                    <span class="name">{t.name}</span>
-                  </span>
-                  <span class="count">{countByType.get(t.code) ?? 0}</span>
+                  <span class="code">{t.code}</span>
+                  <span class="name">{t.name}</span>
+                  {(countByType.get(t.code) ?? 0) > 0 && (
+                    <span class="count">{countByType.get(t.code)}件</span>
+                  )}
                 </a>
               </li>
             ))}
@@ -80,19 +66,6 @@ const fmt = (d: Date) =>
       ))
     }
 
-    <details class="legend">
-      <summary>マークの読み方</summary>
-      <p>
-        16個のマークは飾りではなく、4つの指標から形を導いています。
-        同じ形は2つとしてありません。
-      </p>
-      <ul>
-        <li><b>直観 N</b> は曲線（円・レンズ）、<b>感覚 S</b> は直線（角丸四角・菱形）</li>
-        <li><b>判断 J</b> は正立、<b>知覚 P</b> は回転・変則</li>
-        <li><b>思考 T</b> はストライプ、<b>感情 F</b> はドット</li>
-        <li><b>外向 E</b> は塗り、<b>内向 I</b> は線画</li>
-      </ul>
-    </details>
   </section>
 
   {
@@ -146,23 +119,6 @@ const fmt = (d: Date) =>
     color: var(--fg);
   }
 
-  .hero-marks {
-    display: flex;
-    gap: clamp(0.75rem, 3vw, 1.5rem);
-  }
-
-  /* PCでは文章と図版を横に並べる */
-  @media (min-width: 56rem) {
-    .hero {
-      grid-template-columns: 1fr auto;
-      gap: 3rem;
-    }
-
-    .hero-marks {
-      gap: 1rem;
-    }
-  }
-
   .group {
     margin-bottom: 2.25rem;
   }
@@ -197,12 +153,17 @@ const fmt = (d: Date) =>
     list-style: none;
   }
 
+  /*
+   * 4文字コードそのものを図版として使う。
+   * アイコンを別途置くより、意味が直接読めて説明もいらない。
+   */
   .type-grid a {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
+    position: relative;
+    display: grid;
+    gap: 0.1rem;
     height: 100%;
-    padding: 0.75rem 0.85rem;
+    padding: 0.9rem 1rem 1rem;
+    overflow: hidden;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
@@ -211,22 +172,25 @@ const fmt = (d: Date) =>
     transition: border-color 0.15s, transform 0.15s;
   }
 
+  /* グループ色の細い帯。カードの所属が一目で分かる */
+  .type-grid a::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--g);
+  }
+
   .type-grid a:hover {
     border-color: var(--g);
     transform: translateY(-1px);
   }
 
-  .txt {
-    display: grid;
-    flex: 1 1 auto;
-    gap: 0.05rem;
-    min-width: 0;
-  }
-
   .code {
-    font-size: var(--step-0);
+    font-size: var(--step-2);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
   }
 
   .name {
@@ -236,35 +200,9 @@ const fmt = (d: Date) =>
   }
 
   .count {
-    flex: none;
     color: var(--fg-faint);
     font-size: 0.7rem;
     font-variant-numeric: tabular-nums;
-  }
-
-  .legend {
-    margin-top: 1.5rem;
-    padding: 0.85rem 1.1rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface-alt);
-    font-size: var(--step--1);
-  }
-
-  .legend summary {
-    cursor: pointer;
-    color: var(--fg-muted);
-    font-weight: 700;
-  }
-
-  .legend p {
-    margin: 0.9rem 0 0.6rem;
-    color: var(--fg-muted);
-  }
-
-  .legend ul {
-    margin: 0;
-    color: var(--fg-muted);
   }
 
   .post-list {
