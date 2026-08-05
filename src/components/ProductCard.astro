@@ -1,41 +1,32 @@
 ---
 import { AXIS_GUIDANCE } from '../data/mbti-types';
+import { getProduct } from '../data/products';
 import { amazonLink } from '../lib/amazon';
 
 interface Props {
-  name: string;
+  /** products.ts の商品ID。存在しなければビルドが落ちる。 */
+  id: string;
   /**
-   * ASIN（英数10桁）または amazon.co.jp の商品URL。
-   * アソシエイトタグは amazonLink() が自動で付けるので、記事側では書かない。
+   * 記事ごとに理由を変えたい場合のみ上書きする。
+   * 未指定ならカタログの reason を使う。
    */
-  url: string;
-  price?: string;
-  /**
-   * なぜこのタイプに合うのか。
-   * 「INTJだからこれ」ではなく、指標に翻訳した理由を書く。
-   */
-  reason: string;
-  /** 根拠にした指標（例: ['I', 'N']）。reason の裏づけとして表示する。 */
-  axes?: string[];
-  /**
-   * 気になる点。必須。
-   *
-   * 良い点しか書かれていない商品紹介は信用を失うため、
-   * 省略できないプロパティにしてある。合わない場面を必ず書くこと。
-   */
-  cons: string;
+  reason?: string;
 }
 
-const { name, url, price, reason, axes = [], cons } = Astro.props;
+const { id, reason: reasonOverride } = Astro.props;
+
+const product = getProduct(id);
+const { name, priceHint, axes, cons } = product;
+const reason = reasonOverride ?? product.reason;
 
 // タグ付けを一箇所に集約する。未設定ならここでビルドが落ちる
-const href = amazonLink(url);
+const href = amazonLink(product.asin);
 ---
 
 <div class="card">
   <div class="head">
     <h3>{name}</h3>
-    {price && <span class="price">{price}</span>}
+    {priceHint && <span class="price">{priceHint}</span>}
   </div>
 
   {

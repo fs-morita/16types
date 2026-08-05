@@ -13,6 +13,11 @@ export type NS = 'N' | 'S';
 export type TF = 'T' | 'F';
 export type JP = 'J' | 'P';
 
+/** 8つの指標。商品カタログ側もこれを使い、綴り違いを型で弾く。 */
+export type Axis = EI | NS | TF | JP;
+
+export const ALL_AXES: Axis[] = ['E', 'I', 'N', 'S', 'T', 'F', 'J', 'P'];
+
 export type GroupKey = 'analyst' | 'diplomat' | 'sentinel' | 'explorer';
 
 export interface MbtiType {
@@ -117,7 +122,7 @@ export function typeLabel(type: MbtiType): string {
  * 記事では必ず「一人の時間を大切にする人だから、これ」のように
  * 指標に翻訳した理由を書く。
  */
-export const AXIS_GUIDANCE: Record<string, { label: string; gift: string; self: string }> = {
+export const AXIS_GUIDANCE: Record<Axis, { label: string; gift: string; self: string }> = {
   E: { label: '外向', gift: '人と共有できるもの', self: '人とつながる場を作るもの' },
   I: { label: '内向', gift: '人前で使わないもの', self: '一人で没入できる環境を作るもの' },
   N: { label: '直観', gift: '世界観・物語のあるもの', self: '発想が広がるもの' },
@@ -129,6 +134,6 @@ export const AXIS_GUIDANCE: Record<string, { label: string; gift: string; self: 
 };
 
 /** そのタイプの4指標を配列で返す（記事内の根拠表示に使う）。 */
-export function axesOf(type: MbtiType): string[] {
+export function axesOf(type: MbtiType): Axis[] {
   return [type.axes.ei, type.axes.ns, type.axes.tf, type.axes.jp];
 }
