@@ -1,0 +1,125 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import AffiliateDisclosure from '../components/AffiliateDisclosure.astro';
+import { AUTHOR_TYPE, DIAGNOSIS_NOTICE, ENTERTAINMENT_NOTICE } from '../consts';
+import { getType, typeLabel } from '../data/mbti-types';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  types?: string[];
+  intent: 'explainer' | 'self' | 'gift';
+}
+
+const { title, description, pubDate, updatedDate, types = [], intent } = Astro.props;
+
+const author = getType(AUTHOR_TYPE);
+const related = types.map(getType).filter((t) => t !== undefined);
+
+const fmt = (d: Date) =>
+  new Intl.DateTimeFormat('ja-JP', { dateStyle: 'long', timeZone: 'Asia/Tokyo' }).format(d);
+
+const INTENT_LABEL = {
+  explainer: '解説',
+  self: '自分用',
+  gift: 'プレゼント',
+} as const;
+---
+
+<BaseLayout title={title} description={description}>
+  <article>
+    <header class="post-head">
+      <p class="meta">
+        <span class="intent">{INTENT_LABEL[intent]}</span>
+        <time datetime={pubDate.toISOString()}>{fmt(pubDate)}</time>
+        {updatedDate && <span>（{fmt(updatedDate)} 更新）</span>}
+      </p>
+
+      <h1>{title}</h1>
+
+      {
+        related.length > 0 && (
+          <ul class="types">
+            {related.map((t) => (
+              <li>
+                <a href={`/${t!.code.toLowerCase()}/`}>{typeLabel(t!)}</a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    {/* ステマ規制対応。本文より前に必ず表示する */}
+    <AffiliateDisclosure />
+
+    <div class="body">
+      <slot />
+    </div>
+
+    <footer class="post-foot">
+      <p class="notice">{ENTERTAINMENT_NOTICE}</p>
+      <p class="notice">{DIAGNOSIS_NOTICE}</p>
+      {
+        author && (
+          <p class="byline">
+            筆者は{typeLabel(author)}。実際に使ったものと、使っていないものを
+            記事内で区別して書いています。
+          </p>
+        )
+      }
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-head h1 {
+    margin: 0.4rem 0 0;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.82rem;
+  }
+
+  .intent {
+    padding: 0.1rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+  }
+
+  .types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.85rem;
+  }
+
+  .body :global(p) {
+    line-height: 1.95;
+  }
+
+  .post-foot {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .notice,
+  .byline {
+    margin: 0 0 0.75rem;
+    color: var(--fg-muted);
+    font-size: 0.82rem;
+    line-height: 1.8;
+  }
+</style>

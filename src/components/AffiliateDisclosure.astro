@@ -1,0 +1,54 @@
+---
+import { PR_LABEL, AFFILIATE_DISCLOSURE, AMAZON_ATTRIBUTION } from '../consts';
+
+/**
+ * ステマ規制（景品表示法・2023年10月施行）対応の広告表示。
+ *
+ * 「記事のどこかに書く」では要件を満たさない。冒頭など視認性の高い位置に
+ * 明示する必要があるため、PostLayout の本文より前に固定配置している。
+ * 個別記事側で出し分けできないようにしてあるのは意図的。
+ */
+---
+
+<aside class="disclosure">
+  <span class="pr">{PR_LABEL}</span>
+  <p>
+    {AFFILIATE_DISCLOSURE}
+    <span class="attribution">{AMAZON_ATTRIBUTION}</span>
+  </p>
+</aside>
+
+<style>
+  .disclosure {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin: 0 0 2rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  .pr {
+    flex: none;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .disclosure p {
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  .attribution {
+    display: block;
+  }
+</style>

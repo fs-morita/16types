@@ -1,0 +1,146 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_TAGLINE, AUTHOR_TYPE } from '../consts';
+import { MBTI_TYPES, GROUPS, getType, type GroupKey } from '../data/mbti-types';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('posts')).filter((p) => !p.data.draft);
+
+/** タイプごとの記事本数。0本のタイプもハブページは存在する。 */
+const countByType = new Map<string, number>();
+for (const post of posts) {
+  for (const code of post.data.types) {
+    countByType.set(code, (countByType.get(code) ?? 0) + 1);
+  }
+}
+
+const groupKeys = Object.keys(GROUPS) as GroupKey[];
+const author = getType(AUTHOR_TYPE);
+
+const latest = posts
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 5);
+---
+
+<BaseLayout
+  title="トップ"
+  description={SITE_TAGLINE}
+  isRoot
+>
+  <h1>16タイプ別に、贈るものと自分で使うものを選ぶ</h1>
+
+  <p>
+    性格タイプごとの「好みの傾向」を、4つの指標（外向/内向・直観/感覚・思考/感情・判断/知覚）に
+    分解して考えます。「{author ? author.code : 'INTJ'}だからこれ」という決めつけではなく、
+    「一人の時間を大切にする人だから、これ」という形で理由を書くのが方針です。
+  </p>
+
+  {
+    latest.length > 0 && (
+      <>
+        <h2>新着</h2>
+        <ul class="latest">
+          {latest.map((p) => (
+            <li>
+              <a href={`/posts/${p.id}/`}>{p.data.title}</a>
+              <span>{p.data.description}</span>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <h2>タイプから探す</h2>
+
+  {
+    groupKeys.map((key) => (
+      <section class="group">
+        <h3>
+          {GROUPS[key].name}
+          <span class="group-en">{GROUPS[key].nameEn}</span>
+        </h3>
+        <ul class="types">
+          {MBTI_TYPES.filter((t) => t.group === key).map((t) => (
+            <li>
+              <a href={`/${t.code.toLowerCase()}/`}>
+                <strong>{t.code}</strong>
+                <span>{t.name}</span>
+                <em>{countByType.get(t.code) ?? 0}件</em>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</BaseLayout>
+
+<style>
+  .latest {
+    padding-left: 1.1rem;
+  }
+
+  .latest li {
+    margin-bottom: 0.9rem;
+  }
+
+  .latest span {
+    display: block;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+
+  .group h3 {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    border: 0;
+  }
+
+  .group-en {
+    color: var(--fg-muted);
+    font-size: 0.78rem;
+    font-weight: 400;
+  }
+
+  .types {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.6rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .types a {
+    display: block;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .types a:hover {
+    border-color: var(--link);
+  }
+
+  .types strong {
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+  }
+
+  .types span {
+    display: block;
+    font-size: 0.85rem;
+  }
+
+  .types em {
+    color: var(--fg-muted);
+    font-size: 0.75rem;
+    font-style: normal;
+  }
+</style>

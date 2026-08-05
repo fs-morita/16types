@@ -1,0 +1,146 @@
+---
+import { AXIS_GUIDANCE } from '../data/mbti-types';
+
+interface Props {
+  name: string;
+  /** Amazonの商品URL（アソシエイトリンク）。 */
+  url: string;
+  price?: string;
+  /**
+   * なぜこのタイプに合うのか。
+   * 「INTJだからこれ」ではなく、指標に翻訳した理由を書く。
+   */
+  reason: string;
+  /** 根拠にした指標（例: ['I', 'N']）。reason の裏づけとして表示する。 */
+  axes?: string[];
+  /**
+   * 気になる点。必須。
+   *
+   * 良い点しか書かれていない商品紹介は信用を失うため、
+   * 省略できないプロパティにしてある。合わない場面を必ず書くこと。
+   */
+  cons: string;
+}
+
+const { name, url, price, reason, axes = [], cons } = Astro.props;
+---
+
+<div class="card">
+  <div class="head">
+    <h3>{name}</h3>
+    {price && <span class="price">{price}</span>}
+  </div>
+
+  {
+    axes.length > 0 && (
+      <ul class="axes">
+        {axes.map((a) => (
+          <li>
+            {a}
+            <span class="axis-label">{AXIS_GUIDANCE[a]?.label}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  <p class="reason">{reason}</p>
+
+  <p class="cons"><strong>気になる点</strong>{cons}</p>
+
+  <a class="buy" href={url} target="_blank" rel="nofollow sponsored noopener">
+    Amazonで見る
+  </a>
+</div>
+
+<style>
+  .card {
+    margin: 1.75rem 0;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .head h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+
+  .price {
+    flex: none;
+    color: var(--fg-muted);
+    font-size: 0.875rem;
+  }
+
+  .axes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .axes li {
+    display: inline-flex;
+    gap: 0.3rem;
+    align-items: baseline;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .axis-label {
+    color: var(--fg-muted);
+    font-weight: 400;
+  }
+
+  .reason {
+    margin: 0.85rem 0 0;
+    line-height: 1.9;
+  }
+
+  .cons {
+    margin: 0.85rem 0 0;
+    padding: 0.7rem 0.9rem;
+    border-radius: 6px;
+    background: var(--surface-alt);
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+
+  .cons strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--fg-muted);
+    font-size: 0.8rem;
+  }
+
+  .buy {
+    display: inline-block;
+    margin-top: 1.1rem;
+    padding: 0.55rem 1.4rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .buy:hover {
+    opacity: 0.85;
+  }
+</style>

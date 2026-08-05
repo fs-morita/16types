@@ -1,0 +1,185 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  MBTI_TYPES,
+  GROUPS,
+  AXIS_GUIDANCE,
+  axesOf,
+  typeLabel,
+  type MbtiType,
+} from '../../data/mbti-types';
+
+/**
+ * タイプ別ハブ。16ページを自動生成する。
+ *
+ * 拡散層・自分用層・ギフト層の記事がここに集まり、内部リンクの結節点になる。
+ * 記事が0本のタイプでもページは生成する（サイト構造を先に作るため）。
+ */
+export const getStaticPaths = (() =>
+  MBTI_TYPES.map((type) => ({
+    params: { type: type.code.toLowerCase() },
+    props: { type },
+  }))) satisfies GetStaticPaths;
+
+const { type } = Astro.props as { type: MbtiType };
+
+const posts = (await getCollection('posts'))
+  .filter((p) => !p.data.draft && p.data.types.includes(type.code))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const gift = posts.filter((p) => p.data.intent === 'gift');
+const self = posts.filter((p) => p.data.intent === 'self');
+const explainer = posts.filter((p) => p.data.intent === 'explainer');
+
+const sections = [
+  { key: 'gift', heading: `${type.code}へのプレゼント`, items: gift },
+  { key: 'self', heading: `${type.code}が自分で使うもの`, items: self },
+  { key: 'explainer', heading: `${type.code}の性格を読む`, items: explainer },
+];
+
+const axes = axesOf(type);
+---
+
+<BaseLayout
+  title={typeLabel(type)}
+  description={`${typeLabel(type)}の傾向と、プレゼント・自分用のグッズ選び。4つの指標から理由を分解して考えます。`}
+>
+  <p class="crumb">
+    <a href="/">トップ</a> / {GROUPS[type.group].name}
+  </p>
+
+  <h1>{type.code}（{type.name}）</h1>
+  <p class="en">{type.nameEn}{type.ratioJp && ` ・ 日本での割合 約${type.ratioJp}%`}</p>
+
+  <h2>4つの指標から見た選び方</h2>
+  <p>
+    このタイプは <strong>{axes.join(' / ')}</strong> の組み合わせです。
+    商品を選ぶときは「{type.code}だからこれ」ではなく、指標ごとの傾向に翻訳して考えます。
+  </p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">指標</th>
+          <th scope="col">贈るなら</th>
+          <th scope="col">自分で使うなら</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          axes.map((a) => (
+            <tr>
+              <th scope="row">
+                {a}（{AXIS_GUIDANCE[a]?.label}）
+              </th>
+              <td>{AXIS_GUIDANCE[a]?.gift}</td>
+              <td>{AXIS_GUIDANCE[a]?.self}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  {
+    sections.map((s) =>
+      s.items.length > 0 ? (
+        <>
+          <h2>{s.heading}</h2>
+          <ul class="posts">
+            {s.items.map((p) => (
+              <li>
+                <a href={`/posts/${p.id}/`}>{p.data.title}</a>
+                <span>{p.data.description}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null
+    )
+  }
+
+  {
+    posts.length === 0 && (
+      <p class="empty">
+        {type.code} の記事はまだありません。
+        <a href="/">他のタイプを見る</a>
+      </p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .crumb {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.82rem;
+  }
+
+  h1 {
+    margin: 0.3rem 0 0.2rem;
+  }
+
+  .en {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+  }
+
+  .scroll {
+    overflow-x: auto;
+    margin: 1.25rem 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  th,
+  td {
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead th {
+    background: var(--surface-alt);
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  tbody th {
+    background: var(--surface);
+    white-space: nowrap;
+  }
+
+  .posts {
+    padding-left: 1.1rem;
+  }
+
+  .posts li {
+    margin-bottom: 0.9rem;
+  }
+
+  .posts span {
+    display: block;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+
+  .empty {
+    padding: 1.25rem;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--fg-muted);
+    font-size: 0.9rem;
+  }
+</style>

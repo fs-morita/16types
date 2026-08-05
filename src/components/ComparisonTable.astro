@@ -1,0 +1,77 @@
+---
+interface Props {
+  /** 見出し行。1列目は商品名を想定。 */
+  headers: string[];
+  /** 各行。headers と同じ列数にすること。 */
+  rows: string[][];
+  caption?: string;
+}
+
+const { headers, rows, caption } = Astro.props;
+
+const bad = rows.find((r) => r.length !== headers.length);
+if (bad) {
+  throw new Error(
+    `ComparisonTable: 列数が見出しと一致しません（見出し ${headers.length} 列 / 行 ${bad.length} 列）: ${bad.join(' | ')}`
+  );
+}
+---
+
+<div class="scroll">
+  <table>
+    {caption && <caption>{caption}</caption>}
+    <thead>
+      <tr>{headers.map((h) => <th scope="col">{h}</th>)}</tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            {row.map((cell, i) =>
+              i === 0 ? <th scope="row">{cell}</th> : <td>{cell}</td>
+            )}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  /* 表は横幅を超えることがあるので、ページ本体ではなく表だけを横スクロールさせる */
+  .scroll {
+    overflow-x: auto;
+    margin: 1.75rem 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  caption {
+    margin-bottom: 0.6rem;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    text-align: left;
+  }
+
+  th,
+  td {
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+
+  thead th {
+    background: var(--surface-alt);
+    font-size: 0.85rem;
+  }
+
+  tbody th {
+    background: var(--surface);
+    font-weight: 700;
+  }
+</style>
