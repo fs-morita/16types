@@ -3,8 +3,7 @@
  */
 
 export const SITE_TITLE = '16タイプ研究室';
-export const SITE_TAGLINE =
-  'INTJ（建築家）が書く、性格タイプ別のグッズとプレゼント選び';
+export const SITE_TAGLINE = 'INTJ（建築家）が書く、16タイプの分析ノート';
 export const SITE_URL = 'https://16types.soleon.jp';
 
 /** 筆者の性格タイプ。記事の署名と運営者情報で使う。 */
@@ -15,8 +14,7 @@ export const AUTHOR_TYPE = 'INTJ';
  * 「どこかに書く」では要件を満たさないため、全記事の冒頭に固定表示する。
  */
 export const PR_LABEL = 'PR';
-export const AFFILIATE_DISCLOSURE =
-  '本記事にはアフィリエイト広告（Amazonアソシエイト）が含まれます。';
+export const AFFILIATE_DISCLOSURE = 'この記事には広告が含まれます。';
 
 /** Amazonアソシエイト・プログラムが定める帰属表示。 */
 export const AMAZON_ATTRIBUTION =

@@ -1,0 +1,98 @@
+---
+import type { MbtiType } from '../data/mbti-types';
+import { nextUid } from '../lib/uid';
+
+interface Props {
+  type: MbtiType;
+  /** 表示サイズ(px)。SVGなのでどの値でも劣化しない。 */
+  size?: number;
+}
+
+const { type, size = 48 } = Astro.props;
+const { ei, ns, tf, jp } = type.axes;
+
+/**
+ * 4指標から図形を導出する。
+ *
+ * 「見た目が意味を持つ」ようにしてあるので、規則を変えると
+ * 記号としての一貫性が壊れる。変える場合は16タイプ分まとめて考えること。
+ *
+ *   N/S … 曲線か直線か（円・レンズ / 角丸四角・菱形）
+ *   J/P … 正立か回転か
+ *   T/F … ストライプかドットか
+ *   E/I … 塗りか線画か
+ */
+const shape =
+  ns === 'N' ? (jp === 'J' ? 'circle' : 'lens') : jp === 'J' ? 'square' : 'diamond';
+
+const solid = ei === 'E';
+
+// 同じタイプのマークを1ページに複数置くことがあるため、
+// タイプコードではなくビルド内で一意な連番でIDを作る
+const uid = nextUid(type.code);
+const patternId = `pt-${uid}`;
+const clipId = `cl-${uid}`;
+
+// 図形本体。塗り/線画は共通で使い回す
+const shapes = {
+  circle: '<circle cx="24" cy="24" r="17.5" />',
+  lens: '<path d="M24 5.5C35 13 35 35 24 42.5 13 35 13 13 24 5.5Z" />',
+  square: '<rect x="7" y="7" width="34" height="34" rx="9" />',
+  diamond: '<rect x="10.5" y="10.5" width="27" height="27" rx="6" transform="rotate(45 24 24)" />',
+} as const;
+
+const body = shapes[shape];
+
+/** 塗りのときは地に白抜き、線画のときは色でパターンを描く */
+const inkOnShape = solid ? 'var(--surface)' : 'currentColor';
+---
+
+<svg
+  class="mark"
+  width={size}
+  height={size}
+  viewBox="0 0 48 48"
+  role="img"
+  aria-label={`${type.code} ${type.name}`}
+>
+  <defs>
+    <pattern id={patternId} width="6" height="6" patternUnits="userSpaceOnUse">
+      {
+        tf === 'T' ? (
+          <path d="M0 6 L6 0" stroke={inkOnShape} stroke-width="1.4" fill="none" opacity="0.85" />
+        ) : (
+          <circle cx="3" cy="3" r="1.15" fill={inkOnShape} opacity="0.85" />
+        )
+      }
+    </pattern>
+
+    <clipPath id={clipId}>
+      <Fragment set:html={body} />
+    </clipPath>
+  </defs>
+
+  {/* 外向は塗り、内向は線画 */}
+  {
+    solid ? (
+      <Fragment set:html={body.replace('/>', 'fill="currentColor" />')} />
+    ) : (
+      <Fragment
+        set:html={body.replace('/>', 'fill="none" stroke="currentColor" stroke-width="2" />')}
+      />
+    )
+  }
+
+  {/* 内側のテクスチャ。図形でクリップして外にはみ出させない */}
+  <g clip-path={`url(#${clipId})`}>
+    <rect x="0" y="0" width="48" height="48" fill={`url(#${patternId})`} />
+  </g>
+</svg>
+
+<style>
+  .mark {
+    display: block;
+    flex: none;
+    /* 色は親から currentColor で受け取る。グループ色を親で指定する想定 */
+    color: inherit;
+  }
+</style>

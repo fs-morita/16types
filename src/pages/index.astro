@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
+import TypeMark from '../components/TypeMark.astro';
 import { SITE_TAGLINE } from '../consts';
 import { MBTI_TYPES, GROUPS, type GroupKey } from '../data/mbti-types';
 
@@ -19,6 +20,9 @@ for (const post of posts) {
 
 const groupKeys = Object.keys(GROUPS) as GroupKey[];
 
+/** ヒーローの装飾に使う代表4タイプ（各グループから1つずつ） */
+const heroTypes = groupKeys.map((k) => MBTI_TYPES.find((t) => t.group === k)!);
+
 const INTENT_LABEL = { explainer: '解説', self: '自分用', gift: 'プレゼント' } as const;
 const fmt = (d: Date) =>
   new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' }).format(d);
@@ -26,13 +30,24 @@ const fmt = (d: Date) =>
 
 <BaseLayout title="トップ" description={SITE_TAGLINE} isRoot wide>
   <section class="hero">
-    <h1>16タイプ別に、贈るものと自分で使うものを選ぶ</h1>
-    <p class="lede">
-      「INFPだからこれ」とは書きません。4つの指標
-      （外向/内向・直観/感覚・思考/感情・判断/知覚）に分解して、
-      <strong>「一人の時間を大切にする人だから、これ」</strong>という形で理由を書きます。
-      そのほうが、自分に当てはまるかどうかを読んだ側で判断できるからです。
-    </p>
+    <div class="hero-text">
+      <h1>16タイプを、<br />4つの指標に分解して読む</h1>
+      <p class="lede">
+        「INFPだから」で片づけない。外向/内向・直観/感覚・思考/感情・判断/知覚——
+        <strong>4つの指標がどう噛み合っているか</strong>を見ると、
+        同じタイプの中の違いや、噛み合わない相手との距離まで見えてきます。
+        診断の成り立ちから、タイプごとの傾向まで。
+      </p>
+    </div>
+    <div class="hero-marks" aria-hidden="true">
+      {
+        heroTypes.map((t) => (
+          <span style={`color: var(--g-${t.group})`}>
+            <TypeMark type={t} size={56} />
+          </span>
+        ))
+      }
+    </div>
   </section>
 
   <section aria-labelledby="types-h">
@@ -51,9 +66,12 @@ const fmt = (d: Date) =>
             {MBTI_TYPES.filter((t) => t.group === key).map((t) => (
               <li>
                 <a href={`/${t.code.toLowerCase()}/`}>
-                  <span class="code">{t.code}</span>
-                  <span class="name">{t.name}</span>
-                  <span class="count">{countByType.get(t.code) ?? 0}件</span>
+                  <TypeMark type={t} size={40} />
+                  <span class="txt">
+                    <span class="code">{t.code}</span>
+                    <span class="name">{t.name}</span>
+                  </span>
+                  <span class="count">{countByType.get(t.code) ?? 0}</span>
                 </a>
               </li>
             ))}
@@ -61,6 +79,20 @@ const fmt = (d: Date) =>
         </div>
       ))
     }
+
+    <details class="legend">
+      <summary>マークの読み方</summary>
+      <p>
+        16個のマークは飾りではなく、4つの指標から形を導いています。
+        同じ形は2つとしてありません。
+      </p>
+      <ul>
+        <li><b>直観 N</b> は曲線（円・レンズ）、<b>感覚 S</b> は直線（角丸四角・菱形）</li>
+        <li><b>判断 J</b> は正立、<b>知覚 P</b> は回転・変則</li>
+        <li><b>思考 T</b> はストライプ、<b>感情 F</b> はドット</li>
+        <li><b>外向 E</b> は塗り、<b>内向 I</b> は線画</li>
+      </ul>
+    </details>
   </section>
 
   {
@@ -88,17 +120,47 @@ const fmt = (d: Date) =>
 
 <style>
   .hero {
-    max-width: 42rem;
-    margin-bottom: 1rem;
+    display: grid;
+    gap: 1.75rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-text {
+    max-width: 40rem;
+  }
+
+  .hero h1 {
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.005em;
   }
 
   .lede {
+    margin: 0;
     color: var(--fg-muted);
-    font-size: var(--step-0);
   }
 
   .lede strong {
     color: var(--fg);
+  }
+
+  .hero-marks {
+    display: flex;
+    gap: clamp(0.75rem, 3vw, 1.5rem);
+  }
+
+  /* PCでは文章と図版を横に並べる */
+  @media (min-width: 56rem) {
+    .hero {
+      grid-template-columns: 1fr auto;
+      gap: 3rem;
+    }
+
+    .hero-marks {
+      gap: 1rem;
+    }
   }
 
   .group {
@@ -128,7 +190,7 @@ const fmt = (d: Date) =>
   .type-grid {
     display: grid;
     /* スマホ2列 → タブレット3列 → PC4列。auto-fill で自然に段が変わる */
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
     gap: 0.6rem;
     margin: 0.9rem 0 0;
     padding: 0;
@@ -136,14 +198,15 @@ const fmt = (d: Date) =>
   }
 
   .type-grid a {
-    display: grid;
-    gap: 0.1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
     height: 100%;
-    padding: 0.8rem 0.9rem;
+    padding: 0.75rem 0.85rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
-    color: inherit;
+    color: var(--g);
     text-decoration: none;
     transition: border-color 0.15s, transform 0.15s;
   }
@@ -153,21 +216,55 @@ const fmt = (d: Date) =>
     transform: translateY(-1px);
   }
 
+  .txt {
+    display: grid;
+    flex: 1 1 auto;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+
   .code {
-    color: var(--g);
     font-size: var(--step-0);
     font-weight: 700;
     letter-spacing: 0.08em;
   }
 
   .name {
+    color: var(--fg);
     font-size: var(--step--1);
     line-height: 1.5;
   }
 
   .count {
+    flex: none;
     color: var(--fg-faint);
     font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .legend {
+    margin-top: 1.5rem;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+    font-size: var(--step--1);
+  }
+
+  .legend summary {
+    cursor: pointer;
+    color: var(--fg-muted);
+    font-weight: 700;
+  }
+
+  .legend p {
+    margin: 0.9rem 0 0.6rem;
+    color: var(--fg-muted);
+  }
+
+  .legend ul {
+    margin: 0;
+    color: var(--fg-muted);
   }
 
   .post-list {

@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { SITE_TITLE, SITE_TAGLINE } from '../consts';
+import { SITE_TITLE, SITE_TAGLINE, AMAZON_ATTRIBUTION } from '../consts';
 
 interface Props {
   title: string;
@@ -84,6 +84,12 @@ const year = new Date().getFullYear();
           <a href="/privacy/">プライバシーポリシー</a>
           <a href="/disclaimer/">免責事項</a>
         </nav>
+        {/*
+          Amazonアソシエイト運営規約が求める帰属表示。
+          「サイトに目立つように明示」が要件で、記事冒頭である必要はないため
+          全ページ共通のフッターに置いている。削除しないこと。
+        */}
+        <p class="attribution">{AMAZON_ATTRIBUTION}</p>
         <p class="copy">&copy; {year} {SITE_TITLE}</p>
       </div>
     </footer>
@@ -174,8 +180,13 @@ const year = new Date().getFullYear();
         font-size: var(--step--1);
       }
 
-      .copy {
+      .attribution {
         margin: 1.25rem 0 0;
+        line-height: 1.7;
+      }
+
+      .copy {
+        margin: 0.75rem 0 0;
         color: var(--fg-faint);
       }
     </style>

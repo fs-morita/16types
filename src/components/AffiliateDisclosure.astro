@@ -1,35 +1,38 @@
 ---
-import { PR_LABEL, AFFILIATE_DISCLOSURE, AMAZON_ATTRIBUTION } from '../consts';
+import { PR_LABEL, AFFILIATE_DISCLOSURE } from '../consts';
 
 /**
  * ステマ規制（景品表示法・2023年10月施行）対応の広告表示。
  *
- * 「記事のどこかに書く」では要件を満たさない。冒頭など視認性の高い位置に
- * 明示する必要があるため、PostLayout の本文より前に固定配置している。
- * 個別記事側で出し分けできないようにしてあるのは意図的。
+ * 位置は本文より前で固定。記事側から出し分けできないようにしてあるのは意図的。
+ *
+ * 記事末尾に移動してはいけない。消費者庁の運用基準は、違反例として
+ * 「文末に記載している」を明示的に挙げている（読者が到達しない可能性があるため）。
+ * 同様に「とても小さい」「薄い」文字も違反例なので、視認性を落とす方向の
+ * 調整もしないこと。
+ *
+ * Amazonアソシエイトの帰属表示はこことは別要件（Amazon運営規約）で、
+ * 冒頭である必要がないためサイトフッターに置いている。
  */
 ---
 
-<aside class="disclosure">
+<p class="disclosure">
   <span class="pr">{PR_LABEL}</span>
-  <p>
-    {AFFILIATE_DISCLOSURE}
-    <span class="attribution">{AMAZON_ATTRIBUTION}</span>
-  </p>
-</aside>
+  <span>{AFFILIATE_DISCLOSURE}</span>
+</p>
 
 <style>
   .disclosure {
     display: flex;
-    gap: 0.7rem;
-    align-items: flex-start;
-    margin: 0 0 2.5rem;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface-alt);
-    font-size: 0.78rem;
-    line-height: 1.8;
+    gap: 0.55rem;
+    align-items: center;
+    margin: 0 0 2.25rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--border);
+    /* 「認識しにくい」と判断されないよう、極端に小さく・薄くしない */
+    color: var(--fg-muted);
+    font-size: 0.8rem;
+    line-height: 1.6;
   }
 
   .pr {
@@ -38,18 +41,8 @@ import { PR_LABEL, AFFILIATE_DISCLOSURE, AMAZON_ATTRIBUTION } from '../consts';
     border-radius: 4px;
     background: var(--accent);
     color: var(--accent-fg);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.08em;
-  }
-
-  .disclosure p {
-    margin: 0;
-    color: var(--fg-muted);
-  }
-
-  .attribution {
-    display: block;
-    color: var(--fg-faint);
   }
 </style>
